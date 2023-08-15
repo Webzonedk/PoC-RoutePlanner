@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RoutePlanner
+namespace RoutePlanner.Models
 {
     public class Address
     {

@@ -5,18 +5,23 @@ using System.Text.Json;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using OpenRouteServiceApp;
+using RoutePlanner.Models;
+using RoutePlanner;
 
-namespace OpenRouteServiceApp
+namespace RoutePlanner
 {
     class Program
     {
-        private const string Url = "https://api.openrouteservice.org/v2/directions/driving-car";
-        private const string AuthorizationKey = "5b3ce3597851110001cf62481e7382465ac54de19127d303893c63ba";
+        //private const string Url = "https://api.openrouteservice.org/v2/directions/driving-car";
+        //private const string AuthorizationKey = "5b3ce3597851110001cf62481e7382465ac54de19127d303893c63ba";  
+
+        //private const string Url = "http://10.108.137.62:8080/ors/v2/directions/driving-car"; //School ip
+        private const string Url = "http://192.168.3.73:8080/ors/v2/directions/driving-car"; // Home ip
 
         static async Task Main()
         {
-            Console.WriteLine("Chose option: 1. = insert employeeType \n" +
+            Console.WriteLine("Chose option: \n " +
+                "1 = insert employeeType \n" +
                 "2 = insert DayTypes \n" +
                 "3 = Insert Skills \n " +
                 "4 = Insert Skills \n " +
@@ -25,11 +30,13 @@ namespace OpenRouteServiceApp
                 "7 = Insert Skills \n " +
                 "8 = Insert Skills \n " +
                 "9 = Insert Skills \n " +
+                "0 = get route \n " +
                 "");
             var run = true;
             while (run)
             {
                 char input = Console.ReadKey().KeyChar;
+                var dbManager = new DBManager();
                 switch (input)
                 {
                     case '1':
@@ -40,9 +47,6 @@ namespace OpenRouteServiceApp
                             new EmployeeType(){Title = "SOSU assistent"},
                             new EmployeeType(){Title = "SOSU hjælper"}
                         };
-
-                            //Connect to database
-                            var dbManager = new RoutePlanner.DBManager();
                             dbManager.InsertEmployeeTypeData(employeeType);
                             Console.WriteLine("EmployeeTypes inserted");
                             break;
@@ -50,16 +54,13 @@ namespace OpenRouteServiceApp
                     case '2':
                         {
                             //Insert dayTypes into db
-                            var dayTypes = new List<TypeOfDAy>()
+                            var dayTypes = new List<DayType>()
                         {
-
-                            new TypeOfDAy(){DayType = "Hverdage"},
-                            new TypeOfDAy(){DayType = "Lørdage"},
-                            new TypeOfDAy(){DayType = "Søn- og helligdage"}
+                            new DayType(){WorkingDayType = "Hverdage"},
+                            new DayType(){WorkingDayType = "Lørdage"},
+                            new DayType(){WorkingDayType = "Søn- og helligdage"}
                         };
 
-                            //Connect to database
-                            var dbManager = new RoutePlanner.DBManager();
                             dbManager.InsertDayTypeData(dayTypes);
                             Console.WriteLine("DayTypes inserted");
                             break;
@@ -88,8 +89,6 @@ namespace OpenRouteServiceApp
                             new Skill(){Title = "Andet"}
                         };
 
-                            //Connect to database
-                            var dbManager = new RoutePlanner.DBManager();
                             dbManager.InsertSkillData(skills);
                             Console.WriteLine("Skills inserted");
                             break;
@@ -120,6 +119,12 @@ namespace OpenRouteServiceApp
                         }
                     case '0':
                         {
+                            var routeData = await GetRouteDataAsync();
+                            Debug.WriteLine($"Distance: {routeData.Distance}");
+                            Debug.WriteLine($"Duration: {routeData.Duration}");
+                            Debug.WriteLine($"Coordinates: {string.Join(", ", routeData.Coordinates)}");
+                            Debug.WriteLine($"Profile: {routeData.Profile}");
+                            Debug.WriteLine($"Preference: {routeData.Preference}");
                             break;
                         }
                     case 'x':
@@ -131,17 +136,11 @@ namespace OpenRouteServiceApp
                         break;
                 }
             }
-            
 
 
 
 
-            var routeData = await GetRouteDataAsync();
-            Debug.WriteLine($"Distance: {routeData.Distance}");
-            Debug.WriteLine($"Duration: {routeData.Duration}");
-            Debug.WriteLine($"Coordinates: {string.Join(", ", routeData.Coordinates)}");
-            Debug.WriteLine($"Profile: {routeData.Profile}");
-            Debug.WriteLine($"Preference: {routeData.Preference}");
+
         }
 
 
@@ -154,7 +153,7 @@ namespace OpenRouteServiceApp
         static async Task<RouteData> GetRouteDataAsync()
         {
             using var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Add("Authorization", AuthorizationKey);
+            //httpClient.DefaultRequestHeaders.Add("Authorization", AuthorizationKey);
             //gathering the string with parameters for the api.
             var content = new StringContent("{\"coordinates\":[[11.949467,55.322397],[12.118901,55.249683]],\"instructions\":\"false\",\"preference\":\"recommended\"}", Encoding.UTF8, "application/json");
             //getting the response from the api.
@@ -186,14 +185,11 @@ namespace OpenRouteServiceApp
     }
 
 
-    class EmployeeType
-    {
-        public string Title { get; set; }
-    }
 
-    class TypeOfDAy
+
+    class DayType
     {
-        public string DayType { get; set; }
+        public string WorkingDayType { get; set; }
     }
 
     class Skill

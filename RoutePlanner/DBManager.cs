@@ -1,87 +1,90 @@
 ﻿using Microsoft.Data.SqlClient;
 using OpenRouteServiceApp;
+using RoutePlanner.Models;
 
 namespace RoutePlanner
 {
     internal class DBManager
     {
         // Connection string for the database. Make sure to replace with your credentials.
-        private readonly string connectionString = "Server=ComfortCare;Database=ComforCare;User Id=sa;Password=Kode1234!;";
+        private readonly string _connectionString = "Server=ComfortCare;Database=ComforCare;User Id=sa;Password=Kode1234!;";
+
+
 
         public void InsertEmployeeTypeData(List<EmployeeType> employeeTypes)
         {
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
 
-                foreach (var item in employeeTypes)
-                {
-                    string sqlCommandText = "INSERT INTO EmployeeType (Title) VALUES (@Title)";
+                string sqlCommandText = "INSERT INTO EmployeeType (Title) VALUES (@Title)";
 
-                    using (SqlCommand command = new SqlCommand(sqlCommandText, connection))
+                using (SqlCommand command = new SqlCommand(sqlCommandText, connection))
+                {
+                    foreach (var item in employeeTypes)
                     {
                         command.Parameters.AddWithValue("@Title", item.Title);
-
-                        int rowsAffected = command.ExecuteNonQuery();
-                        Console.WriteLine($"{rowsAffected} row(s) inserted.");
                     }
-
+                    int rowsAffected = command.ExecuteNonQuery();
+                    Console.WriteLine($"{rowsAffected} row(s) inserted.");
                 }
-                // SQL command to insert data into the table.
-            }  // Connection gets automatically closed here due to 'using' statement
+
+            }
+            // SQL command to insert data into the table.
+            // Connection gets automatically closed here due to 'using' statement
         }
 
 
-        public void InsertDayTypeData(List<TypeOfDAy> dateTypes)
+        public void InsertDayTypeData(List<DayType> dayTypes)
         {
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
 
-                foreach (var item in dateTypes)
+                string sqlCommandText = "INSERT INTO DayType (DayType) VALUES (@DayType)";
+
+                using (SqlCommand command = new SqlCommand(sqlCommandText, connection))
                 {
-                    string sqlCommandText = "INSERT INTO DayType (DayType) VALUES (@DayType)";
-
-                    using (SqlCommand command = new SqlCommand(sqlCommandText, connection))
+                    foreach (var item in dayTypes)
                     {
-                        command.Parameters.AddWithValue("@Title", item.DayType);
-
-                        int rowsAffected = command.ExecuteNonQuery();
-                        Console.WriteLine($"{rowsAffected} row(s) inserted.");
+                        command.Parameters.AddWithValue("@Title", item.WordingDayType);
                     }
+                    int rowsAffected = command.ExecuteNonQuery();
+                    Console.WriteLine($"{rowsAffected} row(s) inserted.");
                 }
-                // SQL command to insert data into the table.
-            }  // Connection gets automatically closed here due to 'using' statement
+            }
+            // SQL command to insert data into the table.
+            // Connection gets automatically closed here due to 'using' statement
         }
 
 
         public void InsertSkillData(List<Skill> skills)
         {
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
 
-                foreach (var item in skills)
-                {
-                    string sqlCommandText = "INSERT INTO Skill (Title, SkillDescription) VALUES (@Title, SkillDescription)";
+                string sqlCommandText = "INSERT INTO Skill (Title, SkillDescription) VALUES (@Title, SkillDescription)";
 
-                    using (SqlCommand command = new SqlCommand(sqlCommandText, connection))
+                using (SqlCommand command = new SqlCommand(sqlCommandText, connection))
+                {
+                    foreach (var item in skills)
                     {
                         command.Parameters.AddWithValue("@Title", item.Title);
                         command.Parameters.AddWithValue("@SkillDescription", item.SkillDescription);
-
-                        int rowsAffected = command.ExecuteNonQuery();
-                        Console.WriteLine($"{rowsAffected} row(s) inserted.");
                     }
+                    int rowsAffected = command.ExecuteNonQuery();
+                    Console.WriteLine($"{rowsAffected} row(s) inserted.");
                 }
-                // SQL command to insert data into the table.
-            }  // Connection gets automatically closed here due to 'using' statement
+            }
+            // SQL command to insert data into the table.
+            // Connection gets automatically closed here due to 'using' statement
         }
 
 
         public void InsertUserData(int id, string name, string email)
         {
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
 
