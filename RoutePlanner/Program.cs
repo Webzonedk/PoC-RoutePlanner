@@ -187,10 +187,7 @@ namespace RoutePlanner
 
 
 
-    class DayType
-    {
-        public string WorkingDayType { get; set; }
-    }
+
 
     class Skill
     {
