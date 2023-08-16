@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using RoutePlanner.Models;
 using RoutePlanner;
+using RoutePlanner.Managers;
 
 namespace RoutePlanner
 {
@@ -18,13 +19,14 @@ namespace RoutePlanner
         //private const string Url = "http://10.108.137.62:8080/ors/v2/directions/driving-car"; //School ip
         private const string Url = "http://192.168.3.73:8080/ors/v2/directions/driving-car"; // Home ip
 
+        private static List<Address>? _addresses = null;
         static async Task Main()
         {
             Console.WriteLine("Chose option: \n " +
-                "1 = insert employeeType \n" +
-                "2 = insert DayTypes \n" +
+                "1 = insert employeeType \n " +
+                "2 = insert DayTypes \n " +
                 "3 = Insert Skills \n " +
-                "4 = Insert Skills \n " +
+                "4 = import Address \n " +
                 "5 = Insert Skills \n " +
                 "6 = Insert Skills \n " +
                 "7 = Insert Skills \n " +
@@ -95,6 +97,8 @@ namespace RoutePlanner
                         }
                     case '4':
                         {
+                            _addresses = CsvReader.LoadAddressesFromCsv();
+                            Console.WriteLine("Addresses imported");
                             break;
                         }
                     case '5':
@@ -189,11 +193,7 @@ namespace RoutePlanner
 
 
 
-    class Skill
-    {
-        public string Title { get; set; }
-        public string SkillDescription { get; set; }
-    }
+
 
     //records for the api response. as it is just simple data.
     public record ApiResponse(List<Route> Routes, Metadata Metadata);

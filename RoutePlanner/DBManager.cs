@@ -26,9 +26,7 @@ namespace RoutePlanner
                     }
                     int rowsAffected = command.ExecuteNonQuery();
                     Console.WriteLine($"{rowsAffected} row(s) inserted.");
-                }
-
-            }
+                }            }
             // SQL command to insert data into the table.
             // Connection gets automatically closed here due to 'using' statement
         }
@@ -46,7 +44,7 @@ namespace RoutePlanner
                 {
                     foreach (var item in dayTypes)
                     {
-                        command.Parameters.AddWithValue("@Title", item.WordingDayType);
+                        command.Parameters.AddWithValue("@Title", item.WorkingDayType);
                     }
                     int rowsAffected = command.ExecuteNonQuery();
                     Console.WriteLine($"{rowsAffected} row(s) inserted.");
