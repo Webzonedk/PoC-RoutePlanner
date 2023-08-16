@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using RoutePlanner.Models;
 using RoutePlanner;
+using RoutePlanner.Managers;
 
 namespace RoutePlanner
 {
@@ -20,12 +21,14 @@ namespace RoutePlanner
 
         static async Task Main()
         {
+        List<Address>? addresses = new List<Address>();
+
             Console.WriteLine("Chose option: \n " +
-                "1 = insert employeeType \n" +
-                "2 = insert DayTypes \n" +
+                "1 = insert employeeType \n " +
+                "2 = insert DayTypes \n " +
                 "3 = Insert Skills \n " +
-                "4 = Insert TaskType \n " +
-                "5 = Insert Skills \n " +
+                "4 = import Address \n " +
+                "5 = Insert TaskType \n " +
                 "6 = Insert Skills \n " +
                 "7 = Insert Skills \n " +
                 "8 = Insert Skills \n " +
@@ -96,7 +99,14 @@ namespace RoutePlanner
                         }
                     case '4':
                         {
-                            //Insert dayTypes into db Needs to be adjusted to SOSU skills
+                            addresses = CsvReader.LoadAddressesFromCsv();
+                            dbManager.InsertAddressData(addresses);
+                            Console.WriteLine("Addresses imported");
+                            break;
+                        }
+                    case '5':
+                        {
+                              //Insert TaskTypes into db Needs to be adjusted to SOSU skills
                             var taskTypes = new List<TaskType>()
                         {
                             new TaskType(){Title = "Alm. rengøring", DurationInSeconds = 300, TaskTypeDescription = "Regulær rengøring"},
@@ -105,11 +115,7 @@ namespace RoutePlanner
                         };
 
                             dbManagerTwo.InsertTaskTypeData(taskTypes);
-                            Console.WriteLine("Skills inserted");
-                            break;
-                        }
-                    case '5':
-                        {
+                            Console.WriteLine("TaskTypes inserted");
                             break;
                         }
                     case '6':
@@ -200,11 +206,7 @@ namespace RoutePlanner
 
 
 
-    class Skill
-    {
-        public string Title { get; set; }
-        public string SkillDescription { get; set; }
-    }
+
 
     //records for the api response. as it is just simple data.
     public record ApiResponse(List<Route> Routes, Metadata Metadata);
