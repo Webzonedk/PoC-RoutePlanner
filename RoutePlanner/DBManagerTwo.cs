@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.Data.SqlClient;
 using RoutePlanner.Models;
+using System.Data;
 
 namespace RoutePlanner
 {
@@ -31,6 +32,49 @@ namespace RoutePlanner
                     }
                 }
             }  // Connection gets automatically closed here due to 'using' statement
+        }
+
+        public void InsertCitizenData(List<Citizen> citizens)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("CitizenName", typeof(string));
+            dt.Columns.Add("ResidenceID", typeof(int));
+
+            foreach (var thisCitizen in citizens)
+            {
+                DataRow row = dt.NewRow();
+                row["CitizenName"] = thisCitizen.CitizenName;
+                row["ResidenceID"] = thisCitizen.ResidenceID;
+                dt.Rows.Add(row);
+            }
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
+                    {
+                        // Add column mappings (assuming the database column name is also "Title")
+                        bulkCopy.ColumnMappings.Add("CitizenName", "CitizenName");
+                        bulkCopy.ColumnMappings.Add("ResidenceID", "ResidenceID");
+
+                        bulkCopy.DestinationTableName = "Citizen";
+                        bulkCopy.WriteToServer(dt);
+                    }
+                    connection.Close();
+                }
+
+                Console.WriteLine($"\n{citizens.Count} row(s) inserted.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inserting data: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                }
+            }// Connection gets automatically closed here due to 'using' statement
         }
     }
 }
