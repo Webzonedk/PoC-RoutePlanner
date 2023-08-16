@@ -24,7 +24,7 @@ namespace RoutePlanner
                 "1 = insert employeeType \n" +
                 "2 = insert DayTypes \n" +
                 "3 = Insert Skills \n " +
-                "4 = Insert Skills \n " +
+                "4 = Insert TaskType \n " +
                 "5 = Insert Skills \n " +
                 "6 = Insert Skills \n " +
                 "7 = Insert Skills \n " +
@@ -37,6 +37,7 @@ namespace RoutePlanner
             {
                 char input = Console.ReadKey().KeyChar;
                 var dbManager = new DBManager();
+                var dbManagerTwo = new DBManagerTwo();
                 switch (input)
                 {
                     case '1':
@@ -95,6 +96,16 @@ namespace RoutePlanner
                         }
                     case '4':
                         {
+                            //Insert dayTypes into db Needs to be adjusted to SOSU skills
+                            var taskTypes = new List<TaskType>()
+                        {
+                            new TaskType(){Title = "Alm. rengøring", DurationInSeconds = 300, TaskTypeDescription = "Regulær rengøring"},
+                            new TaskType(){Title = "Medicinering", DurationInSeconds = 300, TaskTypeDescription = "Administrering af medicin"},
+                            new TaskType(){Title = "Bad", DurationInSeconds = 600, TaskTypeDescription = "Bad af borger."},
+                        };
+
+                            dbManagerTwo.InsertTaskTypeData(taskTypes);
+                            Console.WriteLine("Skills inserted");
                             break;
                         }
                     case '5':

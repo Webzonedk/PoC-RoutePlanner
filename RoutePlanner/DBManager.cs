@@ -6,7 +6,7 @@ namespace RoutePlanner
     internal class DBManager
     {
         // Connection string for the database. Make sure to replace with your credentials.
-        private readonly string _connectionString = "Server=ComfortCare;Database=ComforCare;User Id=sa;Password=Kode1234!;";
+        private readonly string _connectionString = "Server=Tinko;Database=ComfortCare;User Id=sa;Password=Kode1234!;TrustServerCertificate=true";
 
 
 
@@ -46,7 +46,7 @@ namespace RoutePlanner
                 {
                     foreach (var item in dayTypes)
                     {
-                        command.Parameters.AddWithValue("@Title", item.WordingDayType);
+                        command.Parameters.AddWithValue("@Title", item.WorkingDayType);
                     }
                     int rowsAffected = command.ExecuteNonQuery();
                     Console.WriteLine($"{rowsAffected} row(s) inserted.");
