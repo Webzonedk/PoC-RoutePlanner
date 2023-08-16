@@ -19,9 +19,10 @@ namespace RoutePlanner
         //private const string Url = "http://10.108.137.62:8080/ors/v2/directions/driving-car"; //School ip
         private const string Url = "http://192.168.3.73:8080/ors/v2/directions/driving-car"; // Home ip
 
-        private static List<Address>? _addresses = null;
         static async Task Main()
         {
+        List<Address>? addresses = new List<Address>();
+
             Console.WriteLine("Chose option: \n " +
                 "1 = insert employeeType \n " +
                 "2 = insert DayTypes \n " +
@@ -97,7 +98,8 @@ namespace RoutePlanner
                         }
                     case '4':
                         {
-                            _addresses = CsvReader.LoadAddressesFromCsv();
+                            addresses = CsvReader.LoadAddressesFromCsv();
+                            dbManager.InsertAddressData(addresses);
                             Console.WriteLine("Addresses imported");
                             break;
                         }

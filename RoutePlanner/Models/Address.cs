@@ -18,7 +18,8 @@ namespace RoutePlanner.Models
 
         public override string ToString()
         {
-            return $"{Vejnavn} {Husnr}, {Supplerendebynavn}, {Postnr} {Postnrnavn}, Bredde: {Wgs84koordinatBredde}, Længde: {Wgs84koordinatLængde}";
+            return $"{Vejnavn} {Husnr}, {Supplerendebynavn}, {Postnr} {Postnrnavn}";
+            //return $"{Vejnavn} {Husnr}, {Supplerendebynavn}, {Postnr} {Postnrnavn}, Bredde: {Wgs84koordinatBredde}, Længde: {Wgs84koordinatLængde}";
         }
     }
 
