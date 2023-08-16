@@ -30,7 +30,7 @@ namespace RoutePlanner
                 "4 = import Address \n " +
                 "5 = Insert TaskType \n " +
                 "6 = Insert Skills \n " +
-                "7 = Insert Skills \n " +
+                "7 = Insert Citizens \n " +
                 "8 = Insert Skills \n " +
                 "9 = Insert Skills \n " +
                 "0 = get route \n " +
@@ -124,6 +124,23 @@ namespace RoutePlanner
                         }
                     case '7':
                         {
+                            //Insert citizens into db
+                            var citizens = new List<Citizen>()
+                        {
+                            new Citizen(){CitizenName = "Bente", ResidenceID = 1},
+                            new Citizen(){CitizenName = "Ole", ResidenceID = 260},
+                            new Citizen(){CitizenName = "Yrsula", ResidenceID = 549},
+                            new Citizen(){CitizenName = "Kurt", ResidenceID = 704},
+                            new Citizen(){CitizenName = "Henning", ResidenceID = 69},
+                            new Citizen(){CitizenName = "Torben", ResidenceID = 333},
+                            new Citizen(){CitizenName = "Elsebet", ResidenceID = 666},
+                            new Citizen(){CitizenName = "Ninna", ResidenceID = 999},
+                            new Citizen(){CitizenName = "Karen", ResidenceID = 643},
+                            new Citizen(){CitizenName = "Carsten", ResidenceID = 1200}
+                        };
+
+                            dbManagerTwo.InsertCitizenData(citizens);
+                            Console.WriteLine("Citizens inserted");
                             break;
                         }
                     case '8':
