@@ -13,7 +13,8 @@ namespace RoutePlanner
         // private readonly string _connectionString = "Server=Tinko;Database=ComfortCare;User Id=sa;Password=Kode1234!;TrustServerCertificate=true"; //Mads
 
 
-
+        //Region for all insert methods
+        #region Insert  
 
 
 
@@ -88,7 +89,6 @@ namespace RoutePlanner
                     }
                     connection.Close();
                 }
-
                 Console.WriteLine($"\n{dayTypes.Count} row(s) inserted.");
             }
             catch (Exception ex)
@@ -195,10 +195,71 @@ namespace RoutePlanner
 
 
         /// <summary>
-        /// Load addresses from database - Not in use as we only need those addresses connected to Citizens
+        /// Insert data into the Distance table
+        /// </summary>
+        /// <param name="distances"></param>
+        public void InsertDistanceData(List<Distance> distances)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("ID", typeof(int));
+            dt.Columns.Add("ResidenceOneID", typeof(int));
+            dt.Columns.Add("ResidenceTwoID", typeof(int));
+            dt.Columns.Add("Duration", typeof(float));
+            dt.Columns.Add("DistanceInMeters", typeof(float));
+
+            foreach (var distance in distances)
+            {
+                dt.Rows.Add(distance.Id, distance.AddressOneId, distance.AddressTwoId, distance.Duration, distance.DistanceInMeters);
+            }
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
+                    {
+                        bulkCopy.ColumnMappings.Add("ID", "ID");
+                        bulkCopy.ColumnMappings.Add("ResidenceOneID", "ResidenceOneID");
+                        bulkCopy.ColumnMappings.Add("ResidenceTwoID", "ResidenceTwoID");
+                        bulkCopy.ColumnMappings.Add("Duration", "Duration");
+                        bulkCopy.ColumnMappings.Add("DistanceInMeters", "DistanceInMeters");
+                        bulkCopy.DestinationTableName = "Distance"; // Assuming the table name is "Distance"
+                        bulkCopy.WriteToServer(dt);
+                    }
+                    connection.Close();
+                }
+
+                Console.WriteLine($"\n{distances.Count} row(s) inserted.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inserting data: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                }
+            }
+        }
+
+
+        #endregion
+
+
+
+
+
+
+
+        //Region for all read methods
+        #region Read    
+
+
+        /// <summary>
+        /// Load addresses from database - Not in use as we only need those addresses connected to Citizens - Not in use
         /// </summary>
         /// <returns>Returns List<Residence> residences </returns>
-        public List<Residence> LoadAddressesFromDatabase()
+        public List<Residence> ReadAllAddressesFromDatabase()
         {
             List<Residence> residences = new List<Residence>();
 
@@ -237,7 +298,60 @@ namespace RoutePlanner
 
 
 
-        public List<Citizen> GetCitizensFromDataBase()
+        /// <summary>
+        /// Load addresses from database - Not in use as we only need those addresses connected to Citizens
+        /// </summary>
+        /// <returns>Returns List<Residence> residences </returns>
+        public List<Residence> ReadAddressesFromDatabaseBasedOnCitizenID(List<Citizen> citizens)
+        {
+            List<Residence> residences = new List<Residence>();
+
+            // Convert the list of CitizenID to a comma-separated string
+            string citizenIds = string.Join(",", citizens.Where(c => c.CitizenID.HasValue).Select(c => c.CitizenID.Value));
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+
+                    // Modify the SQL query to filter results based on CitizenID
+                    string query = $"SELECT Id, citizenResidence, latitude, longitude FROM Residence WHERE Id IN ({citizenIds})";
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Residence address = new Residence
+                                {
+                                    Id = reader.GetInt32(0),
+                                    CitizenResidence = reader.GetString(1),
+                                    Latitude = reader.GetString(2),
+                                    Longitude = reader.GetString(3)
+                                };
+                                residences.Add(address);
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while loading addresses: " + ex.Message);
+            }
+            return residences;
+        }
+
+
+
+
+        /// <summary>
+        ///  Read all citizens from database
+        /// </summary>
+        /// <returns></returns>
+        public List<Citizen> ReadCitizensFromDataBase()
         {
             List<Citizen> citizens = new List<Citizen>();
             try
@@ -269,38 +383,19 @@ namespace RoutePlanner
                 Console.WriteLine("An error occurred while loading addresses: " + ex.Message);
             }
 
-            return null;
+            return citizens ?? null;
         }
 
 
 
-        public List<Distance> AddDistancesToDataBase(List<RouteData> residences)
-        {
-            //List<Residence> addressesToCalculateDistanceFrom = new List<Residence>(residences);
-            //List<Residence> addressesToCalculateDistanceTo = new List<Residence>(residences);
-            return null;
-        }
+        #endregion
 
 
 
 
 
-        public void InsertDistanceData(List<Distance> distances)
-        {
-            //foreach (Distance distance in distances)
-            //{
-            //    if (distances.Contains(distance))
-            //    {
-            //        DataTable dt = new DataTable();
-            //        dt.Columns.Add("AddressOneId", typeof(int));
-            //        dt.Columns.Add("AddressTwoId", typeof(int));
-            //        dt.Columns.Add("Duration", typeof(float));
-            //        dt.Columns.Add("DistanceInMeters", typeof(float));
-            //    }
-            //}
-            //bulkCopy.WriteToServer(dt);
-            //connection.Close();
-        }
+
+
     }
 
 
