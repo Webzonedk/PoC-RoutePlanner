@@ -25,12 +25,18 @@ namespace RoutePlanner
                 "3 = Insert Skills \n " +
                 "4 = import Address \n " +
                 "5 = Insert TaskType \n " +
-                "6 = Calculate Distances \n " +
+                "6 = Calculate and insert Distances \n " +
                 "7 = Insert Citizens \n " +
                 "8 = Insert Skills \n " +
                 "9 = Insert Skills \n " +
-                "0 = get route \n " +
+                "0 = Insert Skills \n " +
+                "a = Insert Skills \n " +
+                "b = Insert Skills \n " +
+                "c = Insert Skills \n " +
+                "d = Insert Skills \n " +
+                "e = Insert Skills \n " +
                 "");
+            //running a loop to keep the program running
             var run = true;
             while (run)
             {
@@ -95,6 +101,7 @@ namespace RoutePlanner
                         }
                     case '4':
                         {
+                            //Import addresses from csv and insert into db
                             addresses = CsvReader.LoadAddressesFromCsv();
                             dbManager.InsertAddressData(addresses);
                             Console.WriteLine("Addresses imported");
@@ -103,6 +110,7 @@ namespace RoutePlanner
                     case '5':
                         {
                             //Insert TaskTypes into db Needs to be adjusted to SOSU skills
+
                             var assignmentTypes = new List<AssignmentType>()
                             {
                                 new AssignmentType(){Title = "Alm. rengøring", DurationInSeconds = 300, AssignmentTypeDescription = "Regulær rengøring"},
@@ -114,17 +122,18 @@ namespace RoutePlanner
                             };
 
                             dbManagerTwo.InsertAssignmentTypeData(assignmentTypes);
+
                             Console.WriteLine("TaskTypes inserted");
                             break;
                         }
                     case '6':
                         {
-                            List<Residence> tempAddresses = dbManager.LoadAddressesFromDatabase();
+                            //Read citizens from db, calculate distances, and insert Distances into db
+                            List<Citizen> citizens = dbManager.ReadCitizensFromDataBase();
+                            List<Residence> tempAddresses = dbManager.ReadAddressesFromDatabaseBasedOnCitizenID(citizens);
 
                             CalculateDistancesManager calculateDistancesManager = new CalculateDistancesManager(); //Maybe an interface should be used to lower bindings
-                            var routeData = await calculateDistancesManager.GetRouteDataAsync(tempAddresses);
-
-                            List<Distance> distances = dbManager.AddDistancesToDataBase(routeData);
+                            var distances = await calculateDistancesManager.GetDistancesAsync(tempAddresses);
                             dbManager.InsertDistanceData(distances);
                             break;
                         }
@@ -196,18 +205,6 @@ namespace RoutePlanner
                         break;
                 }
             }
-
-
-
-
-
         }
-
-
-
-
     }
-
-
-
 }
