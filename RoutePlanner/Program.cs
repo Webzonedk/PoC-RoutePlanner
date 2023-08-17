@@ -21,7 +21,7 @@ namespace RoutePlanner
 
         static async Task Main()
         {
-        List<Address>? addresses = new List<Address>();
+            List<Address>? addresses = new List<Address>();
 
             Console.WriteLine("Chose option: \n " +
                 "1 = insert employeeType \n " +
@@ -106,15 +106,18 @@ namespace RoutePlanner
                         }
                     case '5':
                         {
-                              //Insert TaskTypes into db Needs to be adjusted to SOSU skills
-                            var taskTypes = new List<TaskType>()
+                            //Insert TaskTypes into db Needs to be adjusted to SOSU skills
+                            var assignmentTypes = new List<AssignmentType>()
                         {
-                            new TaskType(){Title = "Alm. rengøring", DurationInSeconds = 300, TaskTypeDescription = "Regulær rengøring"},
-                            new TaskType(){Title = "Medicinering", DurationInSeconds = 300, TaskTypeDescription = "Administrering af medicin"},
-                            new TaskType(){Title = "Bad", DurationInSeconds = 600, TaskTypeDescription = "Bad af borger."},
+                            new AssignmentType(){Title = "Alm. rengøring", DurationInSeconds = 300, AssignmentTypeDescription = "Regulær rengøring"},
+                            new AssignmentType(){Title = "Medicinering", DurationInSeconds = 300, AssignmentTypeDescription = "Administrering af medicin"},
+                            new AssignmentType(){Title = "Natklar", DurationInSeconds = 600, AssignmentTypeDescription = "Gør klar til natten"},
+                            new AssignmentType(){Title = "Sengelægning", DurationInSeconds = 600, AssignmentTypeDescription = "Læg i seng"},
+                            new AssignmentType(){Title = "Opvækning", DurationInSeconds = 1200, AssignmentTypeDescription = "Tag op af sengen"},
+                            new AssignmentType(){Title = "Mad", DurationInSeconds = 900, AssignmentTypeDescription = "Opvarmning af mad, samt servering"},
                         };
 
-                            dbManagerTwo.InsertTaskTypeData(taskTypes);
+                            dbManagerTwo.InsertAssignmentTypeData(assignmentTypes);
                             Console.WriteLine("TaskTypes inserted");
                             break;
                         }
@@ -124,20 +127,31 @@ namespace RoutePlanner
                         }
                     case '7':
                         {
-                            //Insert citizens into db
-                            var citizens = new List<Citizen>()
-                        {
-                            new Citizen(){CitizenName = "Bente", ResidenceID = 1},
-                            new Citizen(){CitizenName = "Ole", ResidenceID = 260},
-                            new Citizen(){CitizenName = "Yrsula", ResidenceID = 549},
-                            new Citizen(){CitizenName = "Kurt", ResidenceID = 704},
-                            new Citizen(){CitizenName = "Henning", ResidenceID = 69},
-                            new Citizen(){CitizenName = "Torben", ResidenceID = 333},
-                            new Citizen(){CitizenName = "Elsebet", ResidenceID = 666},
-                            new Citizen(){CitizenName = "Ninna", ResidenceID = 999},
-                            new Citizen(){CitizenName = "Karen", ResidenceID = 643},
-                            new Citizen(){CitizenName = "Carsten", ResidenceID = 1200}
-                        };
+                            List<string> names = new List<string>
+                            {
+                                "Ole", "Kurt", "Henning", "Torben", "Carsten",
+                                "Erik", "Jens", "Lars", "Sven", "Per",
+                                "Finn", "Jørgen", "Børge", "Anders", "Mogens",
+                                "Knud", "Ebbe", "Allan", "Poul", "Kaj", 
+                                "Bente", "Grete", "Yrsula", "Elsebet", "Ninna",
+                                "Karen", "Annie", "Inger", "Lis", "Mette",
+                                "Tove", "Gitte", "Ruth", "Eva", "Hanne",
+                                "Birgit", "Lene", "Sofie", "Ida", "Anna"
+                            };
+
+                            Random random = new Random();
+                            var citizens = new List<Citizen>();
+
+                            int citizensToCreate = 20;
+
+                            for (int i = 0; i < citizensToCreate; i++)
+                            {
+                                string name = names[random.Next(names.Count)];
+
+                                int residenceID = random.Next(1, 3001);
+
+                                citizens.Add(new Citizen() { CitizenName = name, ResidenceID = residenceID });
+                            }
 
                             dbManagerTwo.InsertCitizenData(citizens);
                             Console.WriteLine("Citizens inserted");
@@ -145,6 +159,19 @@ namespace RoutePlanner
                         }
                     case '8':
                         {
+                            //Insert Assignments into db
+                            var assignments = new List<Assignment>()
+                        {
+                            new Assignment(){DayOfAssignment = "2023-06-15T08:00:00 6/15/2023", TimeFrameStart = "2023-06-15T08:00:00 6/15/2023", TimeFrameEnd = "2023-06-15T08:05:00 6/15/2023", AssignmentTypeID = 1},
+                            new Assignment(){DayOfAssignment = "2023-08-16T08:00:00 8/16/2023", TimeFrameStart = "2023-08-16T16:00:00 8/16/2023", TimeFrameEnd = "2023-08-16T16:05:00 8/16/2023", AssignmentTypeID = 2},
+                            new Assignment(){DayOfAssignment = "2023-08-14T08:00:00 8/16/2033", TimeFrameStart = "2023-08-14:25:00 8/16/2033", TimeFrameEnd = "2023-08-14:35:00 8/16/2033", AssignmentTypeID = 3},
+                            new Assignment(){DayOfAssignment = "2023-06-15T08:00:00 6/15/2023", TimeFrameStart = "2023-06-15T08:25:00 6/15/2023", TimeFrameEnd = "2023-06-15T08:35:00 6/15/2023", AssignmentTypeID = 4},
+                            new Assignment(){DayOfAssignment = "2023-06-15T08:00:00 6/15/2023", TimeFrameStart = "2023-06-15T12:00:00 6/15/2023", TimeFrameEnd = "2023-06-15T12:20:00 6/15/2023", AssignmentTypeID = 5},
+                            new Assignment(){DayOfAssignment = "2023-06-17T08:00:00 6/15/2023", TimeFrameStart = "2023-06-1T08:00:00 6/15/2023", TimeFrameEnd = "2023-06-15T08:15:00 6/15/2023", AssignmentTypeID = 6},
+                        };
+
+                            dbManagerTwo.InsertAssignmentData(assignments);
+                            Console.WriteLine("Assignments inserted");
                             break;
                         }
                     case '9':
