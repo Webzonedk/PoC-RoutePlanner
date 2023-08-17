@@ -58,7 +58,7 @@ namespace RoutePlanner.Managers
                         }
 
                         retryCount++;
-                        await Task.Delay(1000 * retryCount); // Wait for a while before retrying (exponential backoff) x 3 tries
+                        await Task.Delay(1000 * retryCount); // Wait for a while before retrying (exponential increase) x 3 tries
                     }
 
                     if (response == null || !response.IsSuccessStatusCode)

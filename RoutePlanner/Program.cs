@@ -17,7 +17,7 @@ namespace RoutePlanner
 
         static async Task Main()
         {
-        List<ImportAddress>? addresses = new List<ImportAddress>();
+            List<ImportAddress>? addresses = new List<ImportAddress>();
 
             Console.WriteLine("Chose option: \n " +
                 "1 = insert employeeType \n " +
@@ -109,7 +109,7 @@ namespace RoutePlanner
                         }
                     case '5':
                         {
-                              //Insert TaskTypes into db Needs to be adjusted to SOSU skills
+                            //Insert TaskTypes into db Needs to be adjusted to SOSU skills
                             var taskTypes = new List<TaskType>()
                         {
                             new TaskType(){Title = "Alm. rengøring", DurationInSeconds = 300, TaskTypeDescription = "Regulær rengøring"},
@@ -174,18 +174,6 @@ namespace RoutePlanner
                         break;
                 }
             }
-
-
-
-
-
         }
-
-
-
-
     }
-
-
-
 }
