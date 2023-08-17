@@ -44,16 +44,16 @@ namespace RoutePlanner.Managers
                             response = await httpClient.PostAsync(Url, content);
                             if (response.IsSuccessStatusCode)
                             {
-                                break; // Exit the loop if the request was successful
+                                break; // Exit loop if request was successful
                             }
                         }
-                        catch (HttpRequestException) // Catch exceptions related to the request
+                        catch (HttpRequestException)
                         {
-                            // You can log the exception here if needed
+                            // exception logs, if needed
                         }
 
                         retryCount++;
-                        await Task.Delay(1000 * retryCount); // Wait for a while before retrying (exponential backoff)
+                        await Task.Delay(200 * retryCount); // Wait for a while before retrying (exponential backoff) x 3 tries
                     }
 
                     if (response == null || !response.IsSuccessStatusCode)

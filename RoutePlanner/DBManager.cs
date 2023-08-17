@@ -195,7 +195,7 @@ namespace RoutePlanner
 
 
         /// <summary>
-        /// Load addresses from database
+        /// Load addresses from database - Not in use as we only need those addresses connected to Citizens
         /// </summary>
         /// <returns>Returns List<Residence> residences </returns>
         public List<Residence> LoadAddressesFromDatabase()
@@ -224,6 +224,7 @@ namespace RoutePlanner
                             }
                         }
                     }
+                    connection.Close();
                 }
             }
             catch (Exception ex)
@@ -231,6 +232,44 @@ namespace RoutePlanner
                 Console.WriteLine("An error occurred while loading addresses: " + ex.Message);
             }
             return residences;
+        }
+
+
+
+
+        public List<Citizen> GetCitizensFromDataBase()
+        {
+            List<Citizen> citizens = new List<Citizen>();
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("SELECT ID, CitizenName, ResidenceID FROM Citizen", connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Citizen CitizenObject = new Citizen
+                                {
+                                    CitizenID = reader.GetInt32(0),
+                                    CitizenName = reader.GetString(1),
+                                    ResidenceID = reader.GetInt32(2)
+                                };
+                                citizens.Add(CitizenObject);
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while loading addresses: " + ex.Message);
+            }
+
+            return null;
         }
 
 
