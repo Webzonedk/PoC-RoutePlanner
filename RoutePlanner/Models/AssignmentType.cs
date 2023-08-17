@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace RoutePlanner.Models
 {
-    internal class TaskType
+    internal class AssignmentType
     {
         public string Title { get; set; }
-        public string TaskTypeDescription { get; set; }
+        public string AssignmentTypeDescription { get; set; }
         public int DurationInSeconds { get; set; }
     }
 }
