@@ -8,9 +8,9 @@ namespace RoutePlanner
     {
         // Connection string for the database. Make sure to replace with your credentials.
 
-        //private readonly string _connectionString = "Server=LAPTOP-P6H4N3E7;Database=ComfortCare;User Id=sa;Password=Kode1234!;TrustServerCertificate=true"; //Kent
+        private readonly string _connectionString = "Server=LAPTOP-P6H4N3E7;Database=ComfortCare;User Id=sa;Password=Kode1234!;TrustServerCertificate=true"; //Kent
 
-        private readonly string _connectionString = "Server=Tinko;Database=ComfortCare;User Id=sa;Password=Kode1234!;TrustServerCertificate=true"; //Mads
+        // private readonly string _connectionString = "Server=Tinko;Database=ComfortCare;User Id=sa;Password=Kode1234!;TrustServerCertificate=true"; //Mads
 
 
 
@@ -60,6 +60,7 @@ namespace RoutePlanner
         }
 
 
+
         /// <summary>
         /// Method to insert data into the DayType table
         /// </summary>
@@ -99,6 +100,8 @@ namespace RoutePlanner
                 }
             }
         }
+
+
 
         /// <summary>
         /// Method to insert data into the Skill table
@@ -142,14 +145,16 @@ namespace RoutePlanner
             }
         }
 
+
+
         /// <summary>
         /// Method to insert data into the Address table
         /// </summary>
         /// <param name="addresses"></param>
-        public void InsertAddressData(List<Address> addresses)
+        public void InsertAddressData(List<ImportAddress> addresses)
         {
             DataTable dt = new DataTable();
-            dt.Columns.Add("Residence", typeof(string));
+            dt.Columns.Add("CitizenResidence", typeof(string));
             dt.Columns.Add("Latitude", typeof(string));
             dt.Columns.Add("Longitude", typeof(string));
 
@@ -166,7 +171,7 @@ namespace RoutePlanner
                     connection.Open();
                     using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
                     {
-                        bulkCopy.ColumnMappings.Add("Residence", "Residence");
+                        bulkCopy.ColumnMappings.Add("CitizenResidence", "CitizenResidence");
                         bulkCopy.ColumnMappings.Add("Latitude", "Latitude");
                         bulkCopy.ColumnMappings.Add("Longitude", "Longitude");
                         bulkCopy.DestinationTableName = "Residence";
@@ -188,5 +193,78 @@ namespace RoutePlanner
         }
 
 
+
+        /// <summary>
+        /// Load addresses from database
+        /// </summary>
+        /// <returns>Returns List<Residence> residences </returns>
+        public List<Residence> LoadAddressesFromDatabase()
+        {
+            List<Residence> residences = new List<Residence>();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("SELECT Id, citizenResidence, latitude, longitude FROM Residence", connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Residence address = new Residence
+                                {
+                                    Id = reader.GetInt32(0),
+                                    CitizenResidence = reader.GetString(1), // Assuming residence column is at index 1
+                                    Latitude = reader.GetString(2), // Assuming latitude column is at index 2
+                                    Longitude = reader.GetString(3) // Assuming longitude column is at index 3
+                                };
+                                residences.Add(address);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while loading addresses: " + ex.Message);
+            }
+            return residences;
+        }
+
+
+
+        public List<Distance> AddDistancesToDataBase(List<RouteData> residences)
+        {
+            //List<Residence> addressesToCalculateDistanceFrom = new List<Residence>(residences);
+            //List<Residence> addressesToCalculateDistanceTo = new List<Residence>(residences);
+            return null;
+        }
+
+
+
+
+
+        public void InsertDistanceData(List<Distance> distances)
+        {
+            //foreach (Distance distance in distances)
+            //{
+            //    if (distances.Contains(distance))
+            //    {
+            //        DataTable dt = new DataTable();
+            //        dt.Columns.Add("AddressOneId", typeof(int));
+            //        dt.Columns.Add("AddressTwoId", typeof(int));
+            //        dt.Columns.Add("Duration", typeof(float));
+            //        dt.Columns.Add("DistanceInMeters", typeof(float));
+            //    }
+            //}
+            //bulkCopy.WriteToServer(dt);
+            //connection.Close();
+        }
     }
+
+
+
 }
+
