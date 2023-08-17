@@ -13,15 +13,11 @@ namespace RoutePlanner
 {
     class Program
     {
-        //private const string Url = "https://api.openrouteservice.org/v2/directions/driving-car";
-        //private const string AuthorizationKey = "5b3ce3597851110001cf62481e7382465ac54de19127d303893c63ba";  
 
-        //private const string Url = "http://10.108.137.62:8080/ors/v2/directions/driving-car"; //School ip
-        private const string Url = "http://192.168.3.73:8080/ors/v2/directions/driving-car"; // Home ip
 
         static async Task Main()
         {
-        List<Address>? addresses = new List<Address>();
+        List<ImportAddress>? addresses = new List<ImportAddress>();
 
             Console.WriteLine("Chose option: \n " +
                 "1 = insert employeeType \n " +
@@ -29,7 +25,7 @@ namespace RoutePlanner
                 "3 = Insert Skills \n " +
                 "4 = import Address \n " +
                 "5 = Insert TaskType \n " +
-                "6 = Insert Skills \n " +
+                "6 = Calculate Distances \n " +
                 "7 = Insert Skills \n " +
                 "8 = Insert Skills \n " +
                 "9 = Insert Skills \n " +
@@ -120,6 +116,13 @@ namespace RoutePlanner
                         }
                     case '6':
                         {
+                            List<Residence> tempAddresses = dbManager.LoadAddressesFromDatabase();
+
+                            CalculateDistancesManager calculateDistancesManager = new CalculateDistancesManager(); //Maybe an interface should be used to lower bindings
+                            var routeData = await calculateDistancesManager.GetRouteDataAsync(tempAddresses);
+
+                            List<Distance> distances = dbManager.AddDistancesToDataBase(routeData);
+                            dbManager.InsertDistanceData(distances);
                             break;
                         }
                     case '7':
@@ -136,12 +139,6 @@ namespace RoutePlanner
                         }
                     case '0':
                         {
-                            var routeData = await GetRouteDataAsync();
-                            Debug.WriteLine($"Distance: {routeData.Distance}");
-                            Debug.WriteLine($"Duration: {routeData.Duration}");
-                            Debug.WriteLine($"Coordinates: {string.Join(", ", routeData.Coordinates)}");
-                            Debug.WriteLine($"Profile: {routeData.Profile}");
-                            Debug.WriteLine($"Preference: {routeData.Preference}");
                             break;
                         }
                     case 'x':
@@ -162,60 +159,9 @@ namespace RoutePlanner
 
 
 
-        /// <summary>
-        /// Getting the routeData from the api and deserializing it into a RouteData object.
-        /// </summary>
-        /// <returns>return an object with routedate of type RouteData</returns>
-        /// <exception cref="Exception"></exception>
-        static async Task<RouteData> GetRouteDataAsync()
-        {
-            using var httpClient = new HttpClient();
-            //httpClient.DefaultRequestHeaders.Add("Authorization", AuthorizationKey);
-            //gathering the string with parameters for the api.
-            var content = new StringContent("{\"coordinates\":[[11.949467,55.322397],[12.118901,55.249683]],\"instructions\":\"false\",\"preference\":\"recommended\"}", Encoding.UTF8, "application/json");
-            //getting the response from the api.
-            var response = await httpClient.PostAsync(Url, content);
-            //reading the response as a string.
-            var responseBody = await response.Content.ReadAsStringAsync();
-            //deserializing the response into a ApiResponse object.
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true//ensureing that mistakes does not happen if the content is upper og lowercased.
-            };
-            var jsonResponse = JsonSerializer.Deserialize<ApiResponse>(responseBody, options);
-            //catching if the response is null or empty.
-            if (jsonResponse?.Routes == null || !jsonResponse.Routes.Any())
-            {
-                throw new Exception("Routes data is missing in the API response.");
-            }
-            //creating a new RouteData object with the data from the api.
-            var routeData = new RouteData(
-                jsonResponse.Routes[0].Summary.Distance,
-                jsonResponse.Routes[0].Summary.Duration,
-                jsonResponse.Metadata.Query.Coordinates,
-                jsonResponse.Metadata.Query.Profile,
-                jsonResponse.Metadata.Query.Preference
-            );
 
-            return routeData;
-        }
     }
 
 
 
-
-
-
-
-
-    //records for the api response. as it is just simple data.
-    public record ApiResponse(List<Route> Routes, Metadata Metadata);
-
-    public record Route(RouteSummary Summary);
-
-    public record RouteSummary(double Distance, double Duration);
-
-    public record Metadata(Query Query);
-
-    public record Query(List<List<double>> Coordinates, string Profile, string Preference);
 }
