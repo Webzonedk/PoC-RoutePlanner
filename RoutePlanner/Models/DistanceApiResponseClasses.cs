@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RoutePlanner.Models
 {
-    internal class ApiResponseClasses
+    internal class DistanceApiResponseClasses
     {
         public class ApiResponse
         {
