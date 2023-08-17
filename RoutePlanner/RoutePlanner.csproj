@@ -12,9 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Assets\adresserRingsted.csv">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Assets\adresser_Ringsted.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
