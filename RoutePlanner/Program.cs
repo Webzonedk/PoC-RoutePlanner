@@ -151,7 +151,7 @@ namespace RoutePlanner
                                 "Birgit", "Lene", "Sofie", "Ida", "Anna"
                             };
 
-                            List<Residence> residences = dbManager.LoadAddressesFromDatabase();
+                            List<Residence> residences = dbManager.ReadAllAddressesFromDatabase();
 
                             Random random = new Random();
                             var citizens = new List<Citizen>();
