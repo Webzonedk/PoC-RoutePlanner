@@ -8,6 +8,7 @@ namespace RoutePlanner.Models
 {
     internal class DayType
     {
+        public int? Id { get; set; }
         public string? WorkingDayType { get; set; }
     }
 }

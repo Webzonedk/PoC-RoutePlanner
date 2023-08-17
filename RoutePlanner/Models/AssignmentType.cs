@@ -8,6 +8,7 @@ namespace RoutePlanner.Models
 {
     internal class AssignmentType
     {
+        public int Id { get; set; }
         public string Title { get; set; }
         public string AssignmentTypeDescription { get; set; }
         public int DurationInSeconds { get; set; }

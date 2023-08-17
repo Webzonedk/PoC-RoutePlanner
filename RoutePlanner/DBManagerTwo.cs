@@ -128,5 +128,41 @@ namespace RoutePlanner
                 }
             }// Connection gets automatically closed here due to 'using' statement
         }
+
+        public List<AssignmentType> ReadAllAssignmentTypeFromDatabase()
+        {
+            List<AssignmentType> assignmentTypes = new List<AssignmentType>();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("SELECT * FROM AssignmentType", connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                AssignmentType assignmentType = new AssignmentType
+                                {
+                                    Id = reader.GetInt32(0),
+                                    Title = reader.GetString(1), // Assuming residence column is at index 1
+                                    AssignmentTypeDescription = reader.GetString(2), // Assuming latitude column is at index 2
+                                    DurationInSeconds = reader.GetInt32(3) // Assuming longitude column is at index 3
+                                };
+                                assignmentTypes.Add(assignmentType);
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while loading assignment types: " + ex.Message);
+            }
+            return assignmentTypes;
+        }
     }
 }

@@ -27,7 +27,7 @@ namespace RoutePlanner
                 "5 = Insert TaskType \n " +
                 "6 = Calculate and insert Distances \n " +
                 "7 = Insert Citizens \n " +
-                "8 = Insert Skills \n " +
+                "8 = Insert Assignments \n " +
                 "9 = Insert Skills \n " +
                 "0 = Insert Skills \n " +
                 "a = Insert Skills \n " +
@@ -173,20 +173,38 @@ namespace RoutePlanner
                         }
                     case '8':
                         {
-                            //Insert Assignments into db
-                            var assignments = new List<Assignment>()
+
+                            List<DayOfWeek> dayOfAssignments = new List<DayOfWeek>
                             {
-                                new Assignment(){DayOfAssignment = "2023-06-15T08:00:00 6/15/2023", TimeFrameStart = "2023-06-15T08:00:00 6/15/2023", TimeFrameEnd = "2023-06-15T08:05:00 6/15/2023", AssignmentTypeID = 1},
-                                new Assignment(){DayOfAssignment = "2023-08-16T08:00:00 8/16/2023", TimeFrameStart = "2023-08-16T16:00:00 8/16/2023", TimeFrameEnd = "2023-08-16T16:05:00 8/16/2023", AssignmentTypeID = 2},
-                                new Assignment(){DayOfAssignment = "2023-08-14T08:00:00 8/16/2033", TimeFrameStart = "2023-08-14:25:00 8/16/2033", TimeFrameEnd = "2023-08-14:35:00 8/16/2033", AssignmentTypeID = 3},
-                                new Assignment(){DayOfAssignment = "2023-06-15T08:00:00 6/15/2023", TimeFrameStart = "2023-06-15T08:25:00 6/15/2023", TimeFrameEnd = "2023-06-15T08:35:00 6/15/2023", AssignmentTypeID = 4},
-                                new Assignment(){DayOfAssignment = "2023-06-15T08:00:00 6/15/2023", TimeFrameStart = "2023-06-15T12:00:00 6/15/2023", TimeFrameEnd = "2023-06-15T12:20:00 6/15/2023", AssignmentTypeID = 5},
-                                new Assignment(){DayOfAssignment = "2023-06-17T08:00:00 6/15/2023", TimeFrameStart = "2023-06-1T08:00:00 6/15/2023", TimeFrameEnd = "2023-06-15T08:15:00 6/15/2023", AssignmentTypeID = 6},
+                                DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
                             };
+
+
+
+                            List<AssignmentType> assignmentTypes = dbManagerTwo.ReadAllAssignmentTypeFromDatabase();
+
+                            Random random = new Random();
+                            var assignments = new List<Assignment>();
+
+                            int assignmentsToCreate= 20;
+
+                            for (int i = 0; i < assignmentsToCreate; i++)
+                            {
+                                DayOfWeek dayOfAssignment = dayOfAssignments[random.Next(dayOfAssignments.Count)];
+                                TimeSpan TimeFrameStart = TimeFramesStart[random.Next(TimeFramesStart.Count)];
+                                TimeSpan TimeFrameEnd = TimeFramesEnd[random.Next(TimeFramesEnd.Count)];
+
+                                int assignmentTypeId = random.Next(assignmentTypes.Count);
+
+                                AssignmentType assignmentType = assignmentTypes[assignmentTypeId];
+
+                                assignments.Add(new Assignment() { DayOfAssignment = dayOfAssignment, TimeFrameStart = TimeFrameStart, TimeFrameEnd = TimeFrameEnd, AssignmentTypeID = assignmentTypeId });
+                            }
 
                             dbManagerTwo.InsertAssignmentData(assignments);
                             Console.WriteLine("Assignments inserted");
                             break;
+
                         }
                     case '9':
                         {
