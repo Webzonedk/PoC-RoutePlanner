@@ -227,6 +227,14 @@ namespace RoutePlanner
                             run = false;
                             break;
                         }
+                    case 'y':
+                        {
+                            break;
+                        }
+                    case 'z':
+                        {
+                            break;
+                        }
                     default:
                         break;
                 }
