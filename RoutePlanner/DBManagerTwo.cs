@@ -125,28 +125,5 @@ namespace RoutePlanner
                 }
             }// Connection gets automatically closed here due to 'using' statement
         }
-
-        public void GetResidences()
-        {
-            try
-            {
-                List<Address> addresses = new List<Address>();
-                using (SqlConnection connection = new SqlConnection(_connectionString))
-                {
-                    connection.Open();
-
-                    SqlCommand getResidences = new SqlCommand("SELECT * FROM Residence");
-
-                    connection.Close();
-
-                    SqlDataReader reader = getResidences.ExecuteReader();
-                }
-
-            }
-            catch (Exception ex)
-            {
-
-            }// Connection gets automatically closed here due to 'using' statement
-        }
     }
 }
