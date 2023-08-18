@@ -27,7 +27,7 @@ namespace RoutePlanner
                 "5 = Insert TaskType \n " +
                 "6 = Calculate and insert Distances \n " +
                 "7 = Insert Citizens \n " +
-                "8 = Insert Assignments \n " +
+                "8 = Insert TimeFrames \n " +
                 "9 = Insert Skills \n " +
                 "0 = Insert Skills \n " +
                 "a = Insert Skills \n " +
@@ -173,35 +173,51 @@ namespace RoutePlanner
                         }
                     case '8':
                         {
-
-                            List<DayOfWeek> dayOfAssignments = new List<DayOfWeek>
+                            List<DateTime> timeFramesStart = new List<DateTime>
                             {
-                                DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
+                                DateTime.ParseExact("07:00:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("10:00:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("11:00:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("13:00:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("15:00:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("19:00:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("21:00:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("23:00:00", "HH:mm:ss", null)
                             };
 
-
-
-                            List<AssignmentType> assignmentTypes = dbManagerTwo.ReadAllAssignmentTypeFromDatabase();
+                            List<DateTime> timeFramesEnd = new List<DateTime>
+                            {
+                                DateTime.ParseExact("10:00:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("11:00:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("13:00:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("15:00:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("19:00:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("21:00:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("23:00:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("07:00:00", "HH:mm:ss", null)
+                            };
 
                             Random random = new Random();
-                            var assignments = new List<Assignment>();
+                            var timeFrames = new List<TimeFrame>();
 
                             int assignmentsToCreate= 20;
 
                             for (int i = 0; i < assignmentsToCreate; i++)
                             {
-                                DayOfWeek dayOfAssignment = dayOfAssignments[random.Next(dayOfAssignments.Count)];
-                                TimeSpan TimeFrameStart = TimeFramesStart[random.Next(TimeFramesStart.Count)];
-                                TimeSpan TimeFrameEnd = TimeFramesEnd[random.Next(TimeFramesEnd.Count)];
+                                DateTime timeFrameStart = timeFramesStart[random.Next(timeFramesStart.Count)];
+                                int timeFrameStartIndex = timeFramesStart.IndexOf(timeFrameStart);
 
-                                int assignmentTypeId = random.Next(assignmentTypes.Count);
+                                DateTime timeFrameEnd = timeFramesEnd[timeFrameStartIndex];
 
-                                AssignmentType assignmentType = assignmentTypes[assignmentTypeId];
-
-                                assignments.Add(new Assignment() { DayOfAssignment = dayOfAssignment, TimeFrameStart = TimeFrameStart, TimeFrameEnd = TimeFrameEnd, AssignmentTypeID = assignmentTypeId });
+                                //Assigns the data, to 
+                                timeFrames.Add(new TimeFrame()
+                                {
+                                    TimeFrameStart = timeFrameStart,
+                                    TimeFrameEnd = timeFrameEnd,
+                                });
                             }
 
-                            dbManagerTwo.InsertAssignmentData(assignments);
+                            dbManagerTwo.InsertTimeFrameData(timeFrames);
                             Console.WriteLine("Assignments inserted");
                             break;
 

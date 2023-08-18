@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace RoutePlanner.Models
 {
-    internal class Assignment
+    internal class TimeFrame
     {
         public int Id { get; set; }
-        public DayOfWeek DayOfAssignment { get; set; }
         public DateTime TimeFrameStart { get; set; }
         public DateTime TimeFrameEnd { get; set; }
-        public int? AssignmentTypeID { get; set; }
     }
 }

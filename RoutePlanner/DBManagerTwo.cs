@@ -80,21 +80,17 @@ namespace RoutePlanner
             }// Connection gets automatically closed here due to 'using' statement
         }
 
-        public void InsertAssignmentData(List<Assignment> Assignments)
+        public void InsertTimeFrameData(List<TimeFrame> timeframes)
         {
             DataTable dt = new DataTable();
-            dt.Columns.Add("DayOfAssignment", typeof(string));
             dt.Columns.Add("TimeFrameStart", typeof(string));
             dt.Columns.Add("TimeFrameEnd", typeof(string));
-            dt.Columns.Add("AssignmentTypeID", typeof(int));
 
-            foreach (var assignment in Assignments)
+            foreach (var timeframe in timeframes)
             {
                 DataRow row = dt.NewRow();
-                row["DayOfAssignment"] = assignment.DayOfAssignment;
-                row["TimeFrameStart"] = assignment.TimeFrameStart;
-                row["TimeFrameEnd"] = assignment.TimeFrameEnd;
-                row["AssignmentTypeID"] = assignment.AssignmentTypeID;
+                row["TimeFrameStart"] = timeframe.TimeFrameStart;
+                row["TimeFrameEnd"] = timeframe.TimeFrameEnd;
                 dt.Rows.Add(row);
             }
 
@@ -106,18 +102,16 @@ namespace RoutePlanner
                     using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
                     {
                         // Add column mappings (assuming the database column name is also "Title")
-                        bulkCopy.ColumnMappings.Add("DayOfAssignment", "DayOfAssignment");
                         bulkCopy.ColumnMappings.Add("TimeFrameStart", "TimeFrameStart");
                         bulkCopy.ColumnMappings.Add("TimeFrameEnd", "TimeFrameEnd");
-                        bulkCopy.ColumnMappings.Add("AssignmentTypeID", "AssignmentTypeID");
 
-                        bulkCopy.DestinationTableName = "Assignment";
+                        bulkCopy.DestinationTableName = "TimeFrame";
                         bulkCopy.WriteToServer(dt);
                     }
                     connection.Close();
                 }
 
-                Console.WriteLine($"\n{Assignments.Count} row(s) inserted.");
+                Console.WriteLine($"\n{timeframes.Count} row(s) inserted.");
             }
             catch (Exception ex)
             {
