@@ -15,26 +15,69 @@ namespace RoutePlanner
 
         public void InsertAssignmentTypeData(List<AssignmentType> assignmentTypes)
         {
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Title", typeof(string));
+            dt.Columns.Add("AssignmentTypeDescription", typeof(string));
+            dt.Columns.Add("DurationInSeconds", typeof(int));
+
+            foreach (var thisAssignmentType in assignmentTypes)
             {
-                connection.Open();
+                DataRow row = dt.NewRow();
+                row["Title"] = thisAssignmentType.Title;
+                row["AssignmentTypeDescription"] = thisAssignmentType.AssignmentTypeDescription;
+                row["DurationInSeconds"] = thisAssignmentType.DurationInSeconds;
+                dt.Rows.Add(row);
+            }
 
-                // SQL command to insert data into the table.
-                string sqlCommandText = "INSERT INTO AssignmentType (Title, AssignmentTypeDescription, DurationInSeconds) VALUES (@Title, @AssignmentTypeDescription, @DurationInSeconds)";
-
-                foreach (AssignmentType assignmentType in assignmentTypes)
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
-                    using (SqlCommand command = new SqlCommand(sqlCommandText, connection))
+                    connection.Open();
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
                     {
-                        command.Parameters.AddWithValue("@Title", assignmentType.Title);
-                        command.Parameters.AddWithValue("@AssignmentTypeDescription", assignmentType.AssignmentTypeDescription);
-                        command.Parameters.AddWithValue("@DurationInSeconds", assignmentType.DurationInSeconds);
+                        // Add column mappings (assuming the database column name is also "Title")
+                        bulkCopy.ColumnMappings.Add("Title", "Title");
+                        bulkCopy.ColumnMappings.Add("AssignmentTypeDescription", "AssignmentTypeDescription");
+                        bulkCopy.ColumnMappings.Add("DurationInSeconds", "DurationInSeconds");
 
-                        int rowsAffected = command.ExecuteNonQuery();
-                        Console.WriteLine($"{rowsAffected} row(s) inserted.");
+                        bulkCopy.DestinationTableName = "AssignmentType";
+                        bulkCopy.WriteToServer(dt);
                     }
+                    connection.Close();
                 }
-            }  // Connection gets automatically closed here due to 'using' statement
+
+                Console.WriteLine($"\n{assignmentTypes.Count} row(s) inserted.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inserting data: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                }
+            }// Connection gets automatically closed here due to 'using' statement
+
+            //using (SqlConnection connection = new SqlConnection(_connectionString))
+            //{
+            //    connection.Open();
+
+            //    // SQL command to insert data into the table.
+            //    string sqlCommandText = "INSERT INTO AssignmentType (Title, AssignmentTypeDescription, DurationInSeconds) VALUES (@Title, @AssignmentTypeDescription, @DurationInSeconds)";
+
+            //    foreach (AssignmentType assignmentType in assignmentTypes)
+            //    {
+            //        using (SqlCommand command = new SqlCommand(sqlCommandText, connection))
+            //        {
+            //            command.Parameters.AddWithValue("@Title", assignmentType.Title);
+            //            command.Parameters.AddWithValue("@AssignmentTypeDescription", assignmentType.AssignmentTypeDescription);
+            //            command.Parameters.AddWithValue("@DurationInSeconds", assignmentType.DurationInSeconds);
+
+            //            int rowsAffected = command.ExecuteNonQuery();
+            //            Console.WriteLine($"{rowsAffected} row(s) inserted.");
+            //        }
+            //    }
+            //}  // Connection gets automatically closed here due to 'using' statement
         }
 
         public void InsertCitizenData(List<Citizen> citizens)
@@ -123,7 +166,7 @@ namespace RoutePlanner
             }// Connection gets automatically closed here due to 'using' statement
         }
 
-        public List<AssignmentType> ReadAllAssignmentTypeFromDatabase()
+        public List<AssignmentType> SelectAllAssignmentTypeFromDatabase()
         {
             List<AssignmentType> assignmentTypes = new List<AssignmentType>();
 
@@ -141,9 +184,9 @@ namespace RoutePlanner
                                 AssignmentType assignmentType = new AssignmentType
                                 {
                                     Id = reader.GetInt32(0),
-                                    Title = reader.GetString(1), // Assuming residence column is at index 1
-                                    AssignmentTypeDescription = reader.GetString(2), // Assuming latitude column is at index 2
-                                    DurationInSeconds = reader.GetInt32(3) // Assuming longitude column is at index 3
+                                    Title = reader.GetString(1), // Assuming title column is at index 1
+                                    AssignmentTypeDescription = reader.GetString(2), // Assuming AssignmentTypeDescription column is at index 2
+                                    DurationInSeconds = reader.GetInt32(3) // Assuming DurationInSeconds column is at index 3
                                 };
                                 assignmentTypes.Add(assignmentType);
                             }
@@ -154,9 +197,169 @@ namespace RoutePlanner
             }
             catch (Exception ex)
             {
-                Console.WriteLine("An error occurred while loading assignment types: " + ex.Message);
+                Console.WriteLine("An error occurred while loading AssignmentTypes: " + ex.Message);
             }
             return assignmentTypes;
+        }
+
+        /// <summary>
+        /// Inserts the given parameters and objects into the the assignment table in the database.
+        /// </summary>
+        /// <param name="assignments"></param>
+        public void InsertAssignmentData(List<Assignment> assignments)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("CitizenID", typeof(int));
+            dt.Columns.Add("TimeFrameID", typeof(int));
+            dt.Columns.Add("EmployeeTypeMasterID", typeof(int));
+            dt.Columns.Add("EmployeeTypeSlaveID", typeof(int));
+            dt.Columns.Add("AssignmentTypeID", typeof(int));
+
+            foreach (var assignment in assignments)
+            {
+                DataRow row = dt.NewRow();
+                row["CitizenID"] = assignment.CitizenID;
+                row["TimeFrameID"] = assignment.TimeFrameID;
+                row["EmployeeTypeMasterID"] = assignment.EmployeeTypeMasterID;
+                row["EmployeeTypeSlaveID"] = assignment.EmployeeTypeSlaveID;
+                row["AssignmentTypeID"] = assignment.AssignmentTypeID;
+                dt.Rows.Add(row);
+            }
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
+                    {
+                        // Add column mappings (assuming the database column name is also "Title")
+                        bulkCopy.ColumnMappings.Add("CitizenID", "CitizenID");
+                        bulkCopy.ColumnMappings.Add("TimeFrameID", "TimeFrameID");
+                        bulkCopy.ColumnMappings.Add("EmployeeTypeMasterID", "EmployeeTypeMasterID");
+                        bulkCopy.ColumnMappings.Add("EmployeeTypeSlaveID", "EmployeeTypeSlaveID");
+                        bulkCopy.ColumnMappings.Add("AssignmentTypeID", "AssignmentTypeID");
+
+                        bulkCopy.DestinationTableName = "Assignment";
+                        bulkCopy.WriteToServer(dt);
+                    }
+                    connection.Close();
+                }
+
+                Console.WriteLine($"\n{assignments.Count} row(s) inserted.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inserting data: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                }
+            }// Connection gets automatically closed here due to 'using' statement
+        }
+
+        public List<TimeFrame> SelectAllTimeFramesFromDatabase()
+        {
+            List<TimeFrame> TimeFrames = new List<TimeFrame>();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("SELECT * FROM TimeFrame", connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                TimeFrame timeFrame = new TimeFrame
+                                {
+                                    Id = reader.GetInt32(0),
+                                    TimeFrameStart = reader.GetDateTime(1), // Assuming TimeFrameStart column is at index 1
+                                    TimeFrameEnd = reader.GetDateTime(2), // Assuming TimeFrameEnd column is at index 2
+                                };
+                                TimeFrames.Add(timeFrame);
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while loading TimeFrames: " + ex.Message);
+            }
+            return TimeFrames;
+        }
+
+        public List<EmployeeType> SelectAllEmployeeTypesFromDatabase()
+        {
+            List<EmployeeType> employeeTypes = new List<EmployeeType>();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("SELECT * FROM EmployeeType", connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                EmployeeType employeeType = new EmployeeType
+                                {
+                                    Id = reader.GetInt32(0),
+                                    Title = reader.GetString(1), // Assuming Title column is at index 1
+                                };
+                                employeeTypes.Add(employeeType);
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while loading EmployeeTypes: " + ex.Message);
+            }
+            return employeeTypes;
+        }
+
+        public List<Citizen> GetAllCitizensFromDatabase()
+        {
+            List<Citizen> citizens = new List<Citizen>();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("SELECT * FROM Citizen", connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Citizen citizen = new Citizen
+                                {
+                                    Id = reader.GetInt32(0),
+                                    CitizenName = reader.GetString(1), // Assuming CitizenName column is at index 1
+                                    ResidenceID = reader.GetInt32(2), // Assuming ResidenceID column is at index 1
+                                };
+                                citizens.Add(citizen);
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while loading EmployeeTypes: " + ex.Message);
+            }
+            return citizens;
         }
     }
 }

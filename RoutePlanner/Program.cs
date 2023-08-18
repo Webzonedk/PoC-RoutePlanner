@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using RoutePlanner.Models;
 using RoutePlanner;
 using RoutePlanner.Managers;
+using static Azure.Core.HttpHeader;
 
 namespace RoutePlanner
 {
@@ -24,13 +25,13 @@ namespace RoutePlanner
                 "2 = insert DayTypes \n " +
                 "3 = Insert Skills \n " +
                 "4 = import Address \n " +
-                "5 = Insert TaskType \n " +
+                "5 = Insert AssignmenType \n " +
                 "6 = Calculate and insert Distances \n " +
                 "7 = Insert Citizens \n " +
                 "8 = Insert TimeFrames \n " +
                 "9 = Insert Skills \n " +
                 "0 = Insert Skills \n " +
-                "a = Insert Skills \n " +
+                "a = Insert Assignments \n " +
                 "b = Insert Skills \n " +
                 "c = Insert Skills \n " +
                 "d = Insert Skills \n " +
@@ -111,19 +112,49 @@ namespace RoutePlanner
                         {
                             //Insert TaskTypes into db Needs to be adjusted to SOSU skills
 
-                            var assignmentTypes = new List<AssignmentType>()
+                            List<string> titles = new List<string>
                             {
-                                new AssignmentType(){Title = "Alm. rengøring", DurationInSeconds = 300, AssignmentTypeDescription = "Regulær rengøring"},
-                                new AssignmentType(){Title = "Medicinering", DurationInSeconds = 300, AssignmentTypeDescription = "Administrering af medicin"},
-                                new AssignmentType(){Title = "Natklar", DurationInSeconds = 600, AssignmentTypeDescription = "Gør klar til natten"},
-                                new AssignmentType(){Title = "Sengelægning", DurationInSeconds = 600, AssignmentTypeDescription = "Læg i seng"},
-                                new AssignmentType(){Title = "Opvækning", DurationInSeconds = 1200, AssignmentTypeDescription = "Tag op af sengen"},
-                                new AssignmentType(){Title = "Mad", DurationInSeconds = 900, AssignmentTypeDescription = "Opvarmning af mad, samt servering"},
+                                "Alm. rengøring", "Medicinadministration", "Natklar", "Sengelægning",
+                                "Opvækning", "Spise- og Måltidshjælp", "Indkøb af Dagligvarer", "Transport til Aftaler", "Hjælp med Tøjvask",
+                                "Aktivitetsfølgeskab", "Rengøring af Bolig", "Selskab og Samvær", "Ledsagelse til Aktiviteter", "Hjælp til Personlig Hygiejne"
                             };
 
-                            dbManagerTwo.InsertAssignmentTypeData(assignmentTypes);
+                            List<int> durationInSeconds = new List<int>
+                            {
+                                300, 600, 1200, 3600, 1800, 2700, 2100, 4500, 1500, 2100, 2400, 2700
+                            };
 
-                            Console.WriteLine("TaskTypes inserted");
+                            List<string> descriptions = new List<string>
+                            {
+                                "Regulær rengøring", "Giv medicin i henhold til dosering", "Gør klar til natten", "Læg i seng",
+                                "Tag op af sengen", "Assistér med spisning og måltider", "Indkøb af nødvendige dagligvarer", "Kørsel til lægeaftaler og andre aftaler", "Hjælp til vask og foldning af tøj",
+                                "Følgeskab til sociale aktiviteter", "Rengøring af bolig og fællesområder", "Tilbringe tid med borgeren i hyggeligt samvær", "Ledsagelse til fritidsaktiviteter og arrangementer", "Assistér med personlig hygiejne og bad"
+                            };
+
+                            Random random = new Random();
+                            var assignmentTypes = new List<AssignmentType>();
+
+                            //Amount of rows to create
+                            int rowsToCreate = 10;
+
+                            for (int i = 0; i < rowsToCreate; i++)
+                            {
+                                string title = titles[random.Next(titles.Count)];
+                                int titleIndex = titles.IndexOf(title);
+
+                                string description = descriptions[titleIndex];
+
+                                //Assigns the data, to 
+                                assignmentTypes.Add(new AssignmentType()
+                                {
+                                    Title = title,
+                                    DurationInSeconds = random.Next(durationInSeconds.Count),
+                                    AssignmentTypeDescription = description,
+                                });
+                            }
+
+                            dbManagerTwo.InsertAssignmentTypeData(assignmentTypes);
+                            Console.WriteLine("AssignmentType inserted");
                             break;
                         }
                     case '6':
@@ -156,9 +187,10 @@ namespace RoutePlanner
                             Random random = new Random();
                             var citizens = new List<Citizen>();
 
-                            int citizensToCreate = 20;
+                            //Amount of rows to create
+                            int rowsToCreate = 20;
 
-                            for (int i = 0; i < citizensToCreate; i++)
+                            for (int i = 0; i < rowsToCreate; i++)
                             {
                                 string name = names[random.Next(names.Count)];
 
@@ -200,9 +232,10 @@ namespace RoutePlanner
                             Random random = new Random();
                             var timeFrames = new List<TimeFrame>();
 
-                            int assignmentsToCreate= 20;
+                            //Amount of rows to create
+                            int rowsToCreate = 20;
 
-                            for (int i = 0; i < assignmentsToCreate; i++)
+                            for (int i = 0; i < rowsToCreate; i++)
                             {
                                 DateTime timeFrameStart = timeFramesStart[random.Next(timeFramesStart.Count)];
                                 int timeFrameStartIndex = timeFramesStart.IndexOf(timeFrameStart);
@@ -228,6 +261,52 @@ namespace RoutePlanner
                         }
                     case '0':
                         {
+                            break;
+                        }
+                    case 'a':
+                        {
+                            Random random = new Random();
+
+                            //List of assignments
+                            List<Assignment> assignments = new List<Assignment>();
+
+                            //List of all citizens
+                            List<Citizen> citizens = dbManagerTwo.GetAllCitizensFromDatabase();
+
+                            //List of all timeframes possible from parameters.
+                            List<TimeFrame> timeFrames = dbManagerTwo.SelectAllTimeFramesFromDatabase();
+
+                            //List of all EmployeeTypes available from parameters.
+                            List<EmployeeType> employeeTypes = dbManagerTwo.SelectAllEmployeeTypesFromDatabase();
+
+                            //List of all assignmentTypes possible from parameters.
+                            List<AssignmentType> assignmentTypes = dbManagerTwo.SelectAllAssignmentTypeFromDatabase();
+
+                            List<Skill> skillList = new List<Skill>(); //Null for now since we're adding it later if we have time.
+
+                            //Amount of rows to create
+                            int rowsToCreate = 80;
+
+                            for (int i = 0; i < rowsToCreate; i++)
+                            {
+
+                                int randomCitizenIndex = random.Next(citizens.Count);
+                                int randomTimeFrameIndex = random.Next(timeFrames.Count);
+                                int randomEmployeeTypeMasterIndex = random.Next(employeeTypes.Count);
+                                int randomAssignmentTypeIndex = random.Next(assignmentTypes.Count);
+
+                                //Assigns the data, to the Assignment model, and adds them to the "assignments" list.
+                                assignments.Add(new Assignment()
+                                {
+                                    CitizenID = citizens[randomCitizenIndex].Id.Value,
+                                    TimeFrameID = timeFrames[randomTimeFrameIndex].Id,
+                                    EmployeeTypeMasterID = employeeTypes[randomEmployeeTypeMasterIndex].Id,
+                                    AssignmentTypeID = assignmentTypes[randomAssignmentTypeIndex].Id,
+                                });
+                            }
+
+                            dbManagerTwo.InsertAssignmentData(assignments);
+                            Console.WriteLine("Assignments inserted");
                             break;
                         }
                     case 'x':
