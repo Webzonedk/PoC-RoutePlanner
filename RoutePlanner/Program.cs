@@ -14,8 +14,6 @@ namespace RoutePlanner
 {
     class Program
     {
-
-
         static async Task Main()
         {
             List<ImportAddress>? addresses = new List<ImportAddress>();
@@ -110,7 +108,7 @@ namespace RoutePlanner
                         }
                     case '5':
                         {
-                            //Insert TaskTypes into db Needs to be adjusted to SOSU skills
+                            //Insert AssignmentType into db Needs to be adjusted to SOSU skills
 
                             List<string> titles = new List<string>
                             {
@@ -131,6 +129,26 @@ namespace RoutePlanner
                                 "Følgeskab til sociale aktiviteter", "Rengøring af bolig og fællesområder", "Tilbringe tid med borgeren i hyggeligt samvær", "Ledsagelse til fritidsaktiviteter og arrangementer", "Assistér med personlig hygiejne og bad"
                             };
 
+                            List<string> morningAssignments = new List<string>();
+                            List<string> dayAssignments = new List<string>();
+                            List<string> eveningAssignments = new List<string>();
+                            List<string> nightAssignments = new List<string>();
+
+                            for (int i = 0; i < titles.Count; i++)
+                            {
+                                string title = titles[i].ToLower();
+
+                                if (title.Contains("opvækning") || title.Contains("spise- og måltidshjælp") || title.Contains("hjælp til personlig hygiejne"))
+                                    morningAssignments.Add(titles[i]);
+                                else if (title.Contains("medicinadministration") || title.Contains("hjælp med tøjvask") || title.Contains("transport til aftaler") || title.Contains("aktivitetsfølgeskab") || title.Contains("ledsagelse til aktiviteter") || title.Contains("rengøring af bolig") || title.Contains("indkøb af dagligvarer"))
+                                    dayAssignments.Add(titles[i]);
+                                else if (title.Contains("alm. rengøring") || title.Contains("medicinadministration") || title.Contains("spise- og måltidshjælp") || title.Contains("selskab og samvær"))
+                                    eveningAssignments.Add(titles[i]);
+                                else if (title.Contains("natklar") || title.Contains("medicinadministration") || title.Contains("sengelægning"))
+                                    nightAssignments.Add(titles[i]);
+                            }
+
+
                             Random random = new Random();
                             var assignmentTypes = new List<AssignmentType>();
 
@@ -144,13 +162,34 @@ namespace RoutePlanner
 
                                 string description = descriptions[titleIndex];
 
-                                //Assigns the data, to 
-                                assignmentTypes.Add(new AssignmentType()
+                                int timeFrameID = 0;
+                                if (morningAssignments.Contains(title))
                                 {
-                                    Title = title,
-                                    DurationInSeconds = random.Next(durationInSeconds.Count),
-                                    AssignmentTypeDescription = description,
-                                });
+                                    timeFrameID = 1;
+                                }
+                                else if (dayAssignments.Contains(title))
+                                {
+                                    timeFrameID = 2;
+                                }
+                                else if (eveningAssignments.Contains(title))
+                                {
+                                    timeFrameID = 3;
+                                }
+                                else if (nightAssignments.Contains(title))
+                                {
+                                    timeFrameID = 4;
+                                }
+
+                                if (!assignmentTypes.Any(at => at.Title == title && at.TimeFrameID == timeFrameID))
+                                {
+                                    assignmentTypes.Add(new AssignmentType()
+                                    {
+                                        Title = title,
+                                        DurationInSeconds = durationInSeconds[random.Next(durationInSeconds.Count)],
+                                        AssignmentTypeDescription = description,
+                                        TimeFrameID = timeFrameID,
+                                    });
+                                }
                             }
 
                             dbManagerTwo.InsertAssignmentTypeData(assignmentTypes);
@@ -208,23 +247,15 @@ namespace RoutePlanner
                             List<DateTime> timeFramesStart = new List<DateTime>
                             {
                                 DateTime.ParseExact("07:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("10:00:00", "HH:mm:ss", null),
                                 DateTime.ParseExact("11:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("13:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("15:00:00", "HH:mm:ss", null),
                                 DateTime.ParseExact("19:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("21:00:00", "HH:mm:ss", null),
                                 DateTime.ParseExact("23:00:00", "HH:mm:ss", null)
                             };
 
                             List<DateTime> timeFramesEnd = new List<DateTime>
                             {
-                                DateTime.ParseExact("10:00:00", "HH:mm:ss", null),
                                 DateTime.ParseExact("11:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("13:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("15:00:00", "HH:mm:ss", null),
                                 DateTime.ParseExact("19:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("21:00:00", "HH:mm:ss", null),
                                 DateTime.ParseExact("23:00:00", "HH:mm:ss", null),
                                 DateTime.ParseExact("07:00:00", "HH:mm:ss", null)
                             };
@@ -233,14 +264,14 @@ namespace RoutePlanner
                             var timeFrames = new List<TimeFrame>();
 
                             //Amount of rows to create
-                            int rowsToCreate = 20;
+                            int rowsToCreate = 4;
 
                             for (int i = 0; i < rowsToCreate; i++)
                             {
-                                DateTime timeFrameStart = timeFramesStart[random.Next(timeFramesStart.Count)];
+                                DateTime timeFrameStart = timeFramesStart[i];
                                 int timeFrameStartIndex = timeFramesStart.IndexOf(timeFrameStart);
 
-                                DateTime timeFrameEnd = timeFramesEnd[timeFrameStartIndex];
+                                DateTime timeFrameEnd = timeFramesEnd[i];
 
                                 //Assigns the data, to 
                                 timeFrames.Add(new TimeFrame()
@@ -290,19 +321,22 @@ namespace RoutePlanner
                             for (int i = 0; i < rowsToCreate; i++)
                             {
 
-                                int randomCitizenIndex = random.Next(citizens.Count);
-                                int randomTimeFrameIndex = random.Next(timeFrames.Count);
-                                int randomEmployeeTypeMasterIndex = random.Next(employeeTypes.Count);
                                 int randomAssignmentTypeIndex = random.Next(assignmentTypes.Count);
+                                int randomTimeFrameIndex = random.Next(timeFrames.Count);
+                                int randomCitizenIndex = random.Next(citizens.Count);
+                                int randomEmployeeTypeMasterIndex = random.Next(employeeTypes.Count);
 
-                                //Assigns the data, to the Assignment model, and adds them to the "assignments" list.
-                                assignments.Add(new Assignment()
+                                if (assignmentTypes[randomAssignmentTypeIndex].TimeFrameID == timeFrames[randomTimeFrameIndex].Id)
                                 {
-                                    CitizenID = citizens[randomCitizenIndex].Id.Value,
-                                    TimeFrameID = timeFrames[randomTimeFrameIndex].Id,
-                                    EmployeeTypeMasterID = employeeTypes[randomEmployeeTypeMasterIndex].Id,
-                                    AssignmentTypeID = assignmentTypes[randomAssignmentTypeIndex].Id,
-                                });
+                                    //Assigns the data, to the Assignment model, and adds them to the "assignments" list.
+                                    assignments.Add(new Assignment()
+                                    {
+                                        CitizenID = citizens[randomCitizenIndex].Id.Value,
+                                        TimeFrameID = timeFrames[randomTimeFrameIndex].Id,
+                                        EmployeeTypeMasterID = employeeTypes[randomEmployeeTypeMasterIndex].Id,
+                                        AssignmentTypeID = assignmentTypes[randomAssignmentTypeIndex].Id,
+                                    });
+                                }
                             }
 
                             dbManagerTwo.InsertAssignmentData(assignments);

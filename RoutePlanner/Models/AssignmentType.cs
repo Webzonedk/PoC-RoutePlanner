@@ -12,5 +12,6 @@ namespace RoutePlanner.Models
         public string Title { get; set; }
         public string AssignmentTypeDescription { get; set; }
         public int DurationInSeconds { get; set; }
+        public int TimeFrameID { get; set; }
     }
 }

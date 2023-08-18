@@ -19,6 +19,7 @@ namespace RoutePlanner
             dt.Columns.Add("Title", typeof(string));
             dt.Columns.Add("AssignmentTypeDescription", typeof(string));
             dt.Columns.Add("DurationInSeconds", typeof(int));
+            dt.Columns.Add("TimeFrameID", typeof(int));
 
             foreach (var thisAssignmentType in assignmentTypes)
             {
@@ -26,6 +27,7 @@ namespace RoutePlanner
                 row["Title"] = thisAssignmentType.Title;
                 row["AssignmentTypeDescription"] = thisAssignmentType.AssignmentTypeDescription;
                 row["DurationInSeconds"] = thisAssignmentType.DurationInSeconds;
+                row["TimeFrameID"] = thisAssignmentType.TimeFrameID;
                 dt.Rows.Add(row);
             }
 
@@ -40,6 +42,7 @@ namespace RoutePlanner
                         bulkCopy.ColumnMappings.Add("Title", "Title");
                         bulkCopy.ColumnMappings.Add("AssignmentTypeDescription", "AssignmentTypeDescription");
                         bulkCopy.ColumnMappings.Add("DurationInSeconds", "DurationInSeconds");
+                        bulkCopy.ColumnMappings.Add("TimeFrameID", "TimeFrameID");
 
                         bulkCopy.DestinationTableName = "AssignmentType";
                         bulkCopy.WriteToServer(dt);
@@ -56,28 +59,7 @@ namespace RoutePlanner
                 {
                     Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
                 }
-            }// Connection gets automatically closed here due to 'using' statement
-
-            //using (SqlConnection connection = new SqlConnection(_connectionString))
-            //{
-            //    connection.Open();
-
-            //    // SQL command to insert data into the table.
-            //    string sqlCommandText = "INSERT INTO AssignmentType (Title, AssignmentTypeDescription, DurationInSeconds) VALUES (@Title, @AssignmentTypeDescription, @DurationInSeconds)";
-
-            //    foreach (AssignmentType assignmentType in assignmentTypes)
-            //    {
-            //        using (SqlCommand command = new SqlCommand(sqlCommandText, connection))
-            //        {
-            //            command.Parameters.AddWithValue("@Title", assignmentType.Title);
-            //            command.Parameters.AddWithValue("@AssignmentTypeDescription", assignmentType.AssignmentTypeDescription);
-            //            command.Parameters.AddWithValue("@DurationInSeconds", assignmentType.DurationInSeconds);
-
-            //            int rowsAffected = command.ExecuteNonQuery();
-            //            Console.WriteLine($"{rowsAffected} row(s) inserted.");
-            //        }
-            //    }
-            //}  // Connection gets automatically closed here due to 'using' statement
+            }
         }
 
         public void InsertCitizenData(List<Citizen> citizens)
@@ -120,7 +102,7 @@ namespace RoutePlanner
                 {
                     Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
                 }
-            }// Connection gets automatically closed here due to 'using' statement
+            }
         }
 
         public void InsertTimeFrameData(List<TimeFrame> timeframes)
@@ -163,7 +145,7 @@ namespace RoutePlanner
                 {
                     Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
                 }
-            }// Connection gets automatically closed here due to 'using' statement
+            }
         }
 
         public List<AssignmentType> SelectAllAssignmentTypeFromDatabase()
@@ -186,7 +168,8 @@ namespace RoutePlanner
                                     Id = reader.GetInt32(0),
                                     Title = reader.GetString(1), // Assuming title column is at index 1
                                     AssignmentTypeDescription = reader.GetString(2), // Assuming AssignmentTypeDescription column is at index 2
-                                    DurationInSeconds = reader.GetInt32(3) // Assuming DurationInSeconds column is at index 3
+                                    DurationInSeconds = reader.GetInt32(3), // Assuming DurationInSeconds column is at index 3
+                                    TimeFrameID = reader.GetInt32(4), // Assuming TimeFrameID column is at index 4
                                 };
                                 assignmentTypes.Add(assignmentType);
                             }
