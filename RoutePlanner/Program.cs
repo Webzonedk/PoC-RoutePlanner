@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using RoutePlanner.Models;
 using RoutePlanner;
 using RoutePlanner.Managers;
+using RoutePlanner.Services;
 
 namespace RoutePlanner
 {
@@ -29,14 +30,14 @@ namespace RoutePlanner
                 "7 = Calculate and insert Distances \n " +
                 "8 = Insert Skills \n " +
                 "9 = Insert WorkingTimeSpan \n " +
-                "0 = Insert Skills \n " +
+                "0 = Insert Employees \n " +
                 "a = Insert Skills \n " +
                 "b = Insert Skills \n " +
                 "c = Insert Skills \n " +
                 "d = Insert Skills \n " +
                 "e = Insert Skills \n " +
                 "x = exit \n " +
-                "y = Delete all tables (not active) \n " +
+                "y = Delete all tables \n " +
                 "z = Insert all tables (not active) \n " +
                 "");
             //running a loop to keep the program running
@@ -76,29 +77,8 @@ namespace RoutePlanner
                         }
                     case '3':
                         {
-                            //Insert dayTypes into db Needs to be adjusted to SOSU skills
-                            var skills = new List<Skill>()
-                        {
-                            new Skill(){Title = "Alm. rengøring"},
-                            new Skill(){Title = "Vinduespudsning"},
-                            new Skill(){Title = "Tøjvask"},
-                            new Skill(){Title = "Indkøb"},
-                            new Skill(){Title = "Madlavning"},
-                            new Skill(){Title = "Havearbejde"},
-                            new Skill(){Title = "Husdyr"},
-                            new Skill(){Title = "Barnepasning"},
-                            new Skill(){Title = "Hjælpemidler"},
-                            new Skill(){Title = "Personlig pleje"},
-                            new Skill(){Title = "Medicin"},
-                            new Skill(){Title = "Kørsel"},
-                            new Skill(){Title = "Aktiviteter"},
-                            new Skill(){Title = "Kommunikation"},
-                            new Skill(){Title = "IT"},
-                            new Skill(){Title = "Sprog"},
-                            new Skill(){Title = "Andet"}
-                        };
-
-                            dbManager.InsertSkillData(skills);
+                            //Insert skills into db
+                            dbManager.InsertSkillData(CreateSkils());
                             Console.WriteLine("Skills inserted");
                             break;
                         }
@@ -112,21 +92,9 @@ namespace RoutePlanner
                         }
                     case '5':
                         {
-                            //Insert TaskTypes into db Needs to be adjusted to SOSU skills
-
-                            var assignmentTypes = new List<AssignmentType>()
-                            {
-                                new AssignmentType(){Title = "Alm. rengøring", DurationInSeconds = 300, AssignmentTypeDescription = "Regulær rengøring"},
-                                new AssignmentType(){Title = "Medicinering", DurationInSeconds = 300, AssignmentTypeDescription = "Administrering af medicin"},
-                                new AssignmentType(){Title = "Natklar", DurationInSeconds = 600, AssignmentTypeDescription = "Gør klar til natten"},
-                                new AssignmentType(){Title = "Sengelægning", DurationInSeconds = 600, AssignmentTypeDescription = "Læg i seng"},
-                                new AssignmentType(){Title = "Opvækning", DurationInSeconds = 1200, AssignmentTypeDescription = "Tag op af sengen"},
-                                new AssignmentType(){Title = "Mad", DurationInSeconds = 900, AssignmentTypeDescription = "Opvarmning af mad, samt servering"},
-                            };
-
-                            dbManagerTwo.InsertAssignmentTypeData(assignmentTypes);
-
-                            Console.WriteLine("TaskTypes inserted");
+                            //Insert AssignmentTypes into db Needs to be adjusted to SOSU skills
+                            dbManagerTwo.InsertAssignmentTypeData(CreateAssignmentType());
+                            Console.WriteLine("AssignmentTypes inserted");
                             break;
                         }
                     case '6':
@@ -200,6 +168,27 @@ namespace RoutePlanner
                         }
                     case '0':
                         {
+                            Console.WriteLine("How many employees do you want to create?");
+                            int numberOfEmployees = int.Parse(Console.ReadLine());
+                            Console.WriteLine("What percentage of the employees should be SOSU Assistents?");
+                            int percentageOfFirstType = int.Parse(Console.ReadLine());
+                            Console.WriteLine("What percentage of the employees should fulltime employees with 37 hours pr week?");
+                            int hours37Percentage = int.Parse(Console.ReadLine());
+                            Console.WriteLine("What percentage of the employees should parttime employees with 30 hours pr week?");
+                            int hours30Percentage = int.Parse(Console.ReadLine());
+                            Console.WriteLine("What percentage of the employees should parttime employees with 25 hours pr week?");
+                            int hours25Percentage = int.Parse(Console.ReadLine());
+
+
+
+                            //Read EmployeeTypes from db
+                            List<EmployeeType> employeeTypes = dbManager.ReadEmployeeTypesFromDataBase();
+
+                            //Create Employees and insert them into db
+                            EmployeeCreaterService employeeCreaterService = new EmployeeCreaterService();
+
+                            dbManager.InsertEmployees(employeeCreaterService.CreateEmployees(numberOfEmployees, percentageOfFirstType, hours37Percentage, hours30Percentage, hours25Percentage, employeeTypes));
+                            Console.WriteLine("Employees inserted");
                             break;
                         }
                     case 'a':
@@ -229,6 +218,7 @@ namespace RoutePlanner
                         }
                     case 'y':
                         {
+                            dbManager.ResetDatabaseTables();
                             break;
                         }
                     case 'z':
@@ -240,10 +230,59 @@ namespace RoutePlanner
                 }
             }
 
+
+            /// <summary>
+            /// This method is used to create a list of skills needed to accomplish speciel tasks
+            /// </summary>
+            /// <returns>returns a list of type Skill</returns>
+            List<Skill> CreateSkils()
+            {
+                return new List<Skill>()
+                {
+                new Skill { ID = 1, Title = "Medicinhåndtering", SkillDescription = "Oplæring i korrekt medicinhåndtering, herunder dosering, bivirkninger og interaktioner mellem forskellige lægemidler." },
+                new Skill { ID = 2, Title = "Sårpleje", SkillDescription = "Oplæring i pleje af komplekse sår for at sikre korrekt behandling og heling." },
+                new Skill { ID = 3, Title = "Brug af løfte- og forflytningsudstyr", SkillDescription = "Oplæring i korrekt brug af forskellige typer løfte- og forflytningsudstyr for at undgå skader." },
+                new Skill { ID = 4, Title = "Sondeernæring", SkillDescription = "Oplæring i indføring og håndtering af sonder for at sikre korrekt ernæring." },
+                new Skill { ID = 5, Title = "Håndtering af stomi", SkillDescription = "Oplæring i korrekt pleje og skift af stomiposer." },
+                new Skill { ID = 6, Title = "Injektioner", SkillDescription = "Oplæring i administration af injektioner, som insulin, for at sikre korrekt dosering og teknik." },
+                new Skill { ID = 7, Title = "Kolostomi- og ileostomipleje", SkillDescription = "Oplæring i pleje af disse stomier for at sikre korrekt hygiejne." },
+                new Skill { ID = 8, Title = "Katheterpleje", SkillDescription = "Oplæring i både anlæggelse og pleje af kathetre for at undgå infektioner." },
+                new Skill { ID = 9, Title = "Håndtering af demens", SkillDescription = "Oplæring i teknikker og metoder til at arbejde med borgere med demens." },
+                new Skill { ID = 10, Title = "Håndtering af aggressive borgere", SkillDescription = "Oplæring i deeskaleringsteknikker og håndtering af aggressive eller udfordrende borgere." },
+                new Skill { ID = 11, Title = "Håndtering af inkontinens", SkillDescription = "Oplæring i korrekt pleje og skift af inkontinensprodukter samt rådgivning til borgere om inkontinens." },
+                new Skill { ID = 12, Title = "Palliativ pleje", SkillDescription = "Oplæring i pleje af døende borgere og deres pårørende, herunder smertelindring og psykologisk støtte." },
+                new Skill { ID = 13, Title = "Ernæringsstøtte", SkillDescription = "Oplæring i at vurdere borgernes ernæringsbehov og give rådgivning om korrekt ernæring." },
+                new Skill { ID = 14, Title = "Mundhygiejne", SkillDescription = "Oplæring i at yde korrekt mundpleje for at forebygge mundsygdomme og sikre god mundhygiejne." },
+                new Skill { ID = 15, Title = "Håndtering af kroniske sygdomme", SkillDescription = "Oplæring i pleje og støtte til borgere med kroniske sygdomme som diabetes, KOL, hjertesygdomme osv." },
+                new Skill { ID = 16, Title = "Kommunikation med demente", SkillDescription = "Specifikke teknikker og metoder til at kommunikere effektivt med borgere, der lider af demens." },
+                new Skill { ID = 17, Title = "Brug af teknologiske hjælpemidler", SkillDescription = "Oplæring i brug af forskellige teknologiske hjælpemidler, der kan støtte i plejen af ældre borgere." },
+                new Skill { ID = 18, Title = "Forebyggelse af fald", SkillDescription = "Oplæring i metoder og teknikker til at forebygge fald hos ældre borgere." },
+                new Skill { ID = 19, Title = "Psykosocial støtte", SkillDescription = "Oplæring i at yde psykosocial støtte og rådgivning til borgere, der oplever ensomhed, angst eller depression." },
+                new Skill { ID = 20, Title = "Rehabilitering", SkillDescription = "Grundlæggende kendskab til rehabiliteringsteknikker for at støtte borgere i at genoprette deres funktionsevne efter sygdom eller skade." }
+                };
+            };
+
+            /// <summary>
+            /// This method is used to create a list of assignment types
+            /// </summary>
+            /// <returns>returns a list of type AssignmentType</returns>
+            List<AssignmentType> CreateAssignmentType()
+            {
+                return new List<AssignmentType>()
+                {
+                new AssignmentType(){Title = "Alm. rengøring", DurationInSeconds = 300, AssignmentTypeDescription = "Regulær rengøring"},
+                new AssignmentType(){Title = "Medicinering", DurationInSeconds = 300, AssignmentTypeDescription = "Administrering af medicin"},
+                new AssignmentType(){Title = "Natklar", DurationInSeconds = 600, AssignmentTypeDescription = "Gør klar til natten"},
+                new AssignmentType(){Title = "Sengelægning", DurationInSeconds = 600, AssignmentTypeDescription = "Læg i seng"},
+                new AssignmentType(){Title = "Opvækning", DurationInSeconds = 1200, AssignmentTypeDescription = "Tag op af sengen"},
+                new AssignmentType(){Title = "Mad", DurationInSeconds = 900, AssignmentTypeDescription = "Opvarmning af mad, samt servering"},
+                };
+            }
+
             /// <summary>
             /// This method is used to get the working time spans for a day
             /// </summary>
-            /// <returns>returns a list og WorkingTimeSpan</returns>
+            /// <returns>returns a list of type WorkingTimeSpan</returns>
             List<WorkingTimeSpan> GetWorkingTimeSpans()
             {
                 return new List<WorkingTimeSpan>
@@ -252,7 +291,7 @@ namespace RoutePlanner
                 new WorkingTimeSpan {TimeStart = new TimeSpan(15, 0, 0), TimeEnd = new TimeSpan(23, 0, 0) },
                 new WorkingTimeSpan {TimeStart = new TimeSpan(23, 0, 0), TimeEnd = new TimeSpan(7, 0, 0) } //wraps to the next day
                 };
-            }
+            };
         }
     }
 }

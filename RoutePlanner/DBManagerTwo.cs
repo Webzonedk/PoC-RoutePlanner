@@ -8,6 +8,7 @@ namespace RoutePlanner
 {
     internal class DBManagerTwo : DataService
     {
+        private string _connectionString => ConnectionString;
 
         public void InsertAssignmentTypeData(List<AssignmentType> assignmentTypes)
         {

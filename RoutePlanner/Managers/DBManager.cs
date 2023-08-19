@@ -3,7 +3,7 @@ using RoutePlanner.DataSources;
 using RoutePlanner.Models;
 using System.Data;
 
-namespace RoutePlanner
+namespace RoutePlanner.Managers
 {
     internal class DBManager : DataService
     {
@@ -12,7 +12,7 @@ namespace RoutePlanner
         //Region for all insert methods
         #region Insert  
 
-
+        private string _connectionString => ConnectionString;
 
         /// <summary>
         /// Method to insert data into the EmployeeType table
@@ -341,6 +341,61 @@ namespace RoutePlanner
             }
         }
 
+
+
+
+        public void InsertEmployees(List<Employee> employees)
+        {
+            // 1. Opret en DataTable der matcher Employee strukturen i databasen
+            DataTable dt = new DataTable();
+            dt.Columns.Add("ID", typeof(int));
+            dt.Columns.Add("Initials", typeof(string));
+            dt.Columns.Add("EmployeePassword", typeof(string));
+            dt.Columns.Add("EmployeeName", typeof(string));
+            dt.Columns.Add("WeeklyWorkingHours", typeof(int));
+            dt.Columns.Add("EmployeeTypeID", typeof(int));
+
+            // 2. Fyld DataTable med data fra listen af Employee objekter
+            foreach (var employee in employees)
+            {
+                dt.Rows.Add(null, employee.Initials, employee.EmployeePassword, employee.EmployeeName, employee.WeeklyWorkingHours, employee.EmployeeTypeID);
+            }
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+
+                    // Brug SqlBulkCopy til at indsætte data
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
+                    {
+                        bulkCopy.ColumnMappings.Add("Initials", "Initials");
+                        bulkCopy.ColumnMappings.Add("EmployeePassword", "EmployeePassword");
+                        bulkCopy.ColumnMappings.Add("EmployeeName", "EmployeeName");
+                        bulkCopy.ColumnMappings.Add("WeeklyWorkingHours", "WeeklyWorkingHours");
+                        bulkCopy.ColumnMappings.Add("EmployeeTypeID", "EmployeeTypeID");
+                        bulkCopy.DestinationTableName = "Employee";
+                        bulkCopy.WriteToServer(dt);
+                    }
+
+                    connection.Close();
+                }
+
+                Console.WriteLine($"\n{employees.Count} employee row(s) inserted.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inserting data: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                }
+            }
+        }
+
+
+
         #endregion
 
 
@@ -351,6 +406,12 @@ namespace RoutePlanner
 
         //Region for all read methods
         #region Read    
+
+
+
+
+
+
 
 
         /// <summary>
@@ -478,19 +539,131 @@ namespace RoutePlanner
             }
             catch (Exception ex)
             {
-                Console.WriteLine("An error occurred while loading addresses: " + ex.Message);
+                Console.WriteLine("An error occurred while loading citizens: " + ex.Message);
             }
 
-            return citizens ?? null;
+            return citizens;
         }
 
 
+
+
+        /// <summary>
+        /// This method reads all employeeTypes from the database and returns them as a list of EmployeeType objects
+        /// </summary>
+        /// <returns></returns>
+        public List<EmployeeType> ReadEmployeeTypesFromDataBase()
+        {
+            List<EmployeeType> employeeTypes = new List<EmployeeType>();
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("SELECT ID, Title FROM EmployeeType", connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                EmployeeType employeeTypeObject = new EmployeeType
+                                {
+                                    ID = reader.GetInt32(0),
+                                    Title = reader.GetString(1)
+                                };
+                                employeeTypes.Add(employeeTypeObject);
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while loading employee types: " + ex.Message);
+            }
+
+            return employeeTypes;
+        }
+
+        #endregion
+
+
+        #region Update
 
         #endregion
 
 
 
 
+        #region Delete
+
+        /// <summary>
+        /// This method deletes all data from the database and resets the identity columns
+        /// </summary>
+        public void ResetDatabaseTables()
+        {
+            // Ordered list of tables for deletion considering constraints
+            string[] tablesToDelete = {
+                "EmployeeStatementPeriod", "EmployeePreference", "EmployeeEmployeeRoute", "TimeRegistration",
+                "EmployeeSkill", "EmployeeRoute", "Assignment", "Employee", "Citizen", "Distance",
+                "Preference", "WorkingTimespan", "DayType", "TimeFrame", "AssignmentType", "Skill",
+                "Residence", "EmployeeType", "StatementPeriod"
+                };
+
+            // List of tables with identity columns to reset
+            string[] tablesWithIdentity = {
+                "Employee", "EmployeeType", "StatementPeriod", "TimeRegistration", "EmployeeRoute",
+                "Assignment", "Citizen", "Residence", "Distance", "TimeFrame", "AssignmentType",
+                "Skill", "Preference", "WorkingTimespan", "DayType", "EmployeeEmployeeRoute",
+                "EmployeeSkill", "EmployeePreference", "EmployeeStatementPeriod"
+                };
+
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.Connection = connection;
+
+                    // Begin transaction
+                    SqlTransaction transaction = connection.BeginTransaction();
+                    command.Transaction = transaction;
+
+                    try
+                    {
+                        // Delete all records from each table in the correct order
+                        foreach (string table in tablesToDelete)
+                        {
+                            command.CommandText = $"DELETE FROM {table}";
+                            command.ExecuteNonQuery();
+                        }
+
+                        // Reset identity seed for each table
+                        foreach (string table in tablesWithIdentity)
+                        {
+                            command.CommandText = $"DBCC CHECKIDENT ('{table}', RESEED, 0)";
+                            command.ExecuteNonQuery();
+                        }
+
+                        // Commit transaction
+                        transaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Rollback transaction in case of an error
+                        transaction.Rollback();
+
+                        // Log or handle the exception as needed
+                        Console.WriteLine($"An error occurred: {ex.Message}");
+                    }
+                }
+                connection.Close();
+                Console.WriteLine("\nAll Tables has been reset");
+            }
+        }
+        #endregion
 
 
 

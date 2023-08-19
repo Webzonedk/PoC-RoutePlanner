@@ -8,6 +8,7 @@ namespace RoutePlanner.Models
 {
     internal class EmployeeType
     {
+        public int ID { get; set; }
         public string Title { get; set; }
     }
 }
