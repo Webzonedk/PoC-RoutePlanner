@@ -361,6 +361,7 @@ namespace RoutePlanner
                                 var uniqueCombination = uniqueCombinations[i];
                                 int citizenId = uniqueCombination.Item1;
                                 int randomAssignmentTypeIndex = random.Next(assignmentTypes.Count);
+                                int randomEmployeeTypeMasterIndex = random.Next(employeeTypes.Count);
 
                                 assignments.Add(new Assignment()
                                 {
