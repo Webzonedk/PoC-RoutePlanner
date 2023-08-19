@@ -8,6 +8,8 @@ namespace RoutePlanner
 {
     internal class DBManagerTwo : DataService
     {
+        private string _connectionString => ConnectionString;
+
         /// <summary>
         /// Inserts assignments into the database, loop through all the assignmentTypes, and assign the current assignmentType to the row. 
         /// </summary>

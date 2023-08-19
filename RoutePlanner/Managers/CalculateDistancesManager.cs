@@ -11,7 +11,7 @@ namespace RoutePlanner.Managers
 {
     internal class CalculateDistancesManager : DataService
     {
-
+        private string _Url => OpenRouteServiceUrl;
 
         /// <summary>
         /// Method to get the distances between all the addresses
@@ -41,7 +41,7 @@ namespace RoutePlanner.Managers
                     {
                         try
                         {
-                            response = await httpClient.PostAsync(Url, content);
+                            response = await httpClient.PostAsync(_Url, content);
                             if (response.IsSuccessStatusCode)
                             {
                                 break; // Exit loop if request was successful
