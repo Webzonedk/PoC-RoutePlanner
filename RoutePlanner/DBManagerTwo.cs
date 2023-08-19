@@ -8,7 +8,10 @@ namespace RoutePlanner
 {
     internal class DBManagerTwo : DataService
     {
-
+        /// <summary>
+        /// Inserts assignments into the database, loop through all the assignmentTypes, and assign the current assignmentType to the row. 
+        /// </summary>
+        /// <param name="assignmentTypes">The assignmentTypes generated previously, that is being passed down to the db call.</param>
         public void InsertAssignmentTypeData(List<AssignmentType> assignmentTypes)
         {
             DataTable dt = new DataTable();
@@ -58,6 +61,10 @@ namespace RoutePlanner
             }
         }
 
+        /// <summary>
+        /// Inserts the generated citizens into the citizen table in the database.
+        /// </summary>
+        /// <param name="citizens">The citizens previously generated in the Program.cs file.</param>
         public void InsertCitizenData(List<Citizen> citizens)
         {
             DataTable dt = new DataTable();
@@ -101,6 +108,10 @@ namespace RoutePlanner
             }
         }
 
+        /// <summary>
+        /// Inserts the TimeFrames generated into the TimeFrame table, in the database.
+        /// </summary>
+        /// <param name="timeframes">The timeframes previously generated in the Program.cs file.</param>
         public void InsertTimeFrameData(List<TimeFrame> timeframes)
         {
             DataTable dt = new DataTable();
