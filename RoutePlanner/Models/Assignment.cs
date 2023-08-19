@@ -8,9 +8,11 @@ namespace RoutePlanner.Models
 {
     internal class Assignment
     {
-        public string? DayOfAssignment { get; set; }
-        public string? TimeFrameStart { get; set; }
-        public string? TimeFrameEnd { get; set; }
-        public int? AssignmentTypeID { get; set; }
+        public int Id { get; set; }
+        public int CitizenID { get; set; }
+        public int TimeFrameID { get; set; }
+        public int EmployeeTypeMasterID { get; set; }
+        public int EmployeeTypeSlaveID { get; set; }
+        public int AssignmentTypeID { get; set; }
     }
 }

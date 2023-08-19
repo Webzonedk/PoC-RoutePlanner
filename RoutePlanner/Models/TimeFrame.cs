@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace RoutePlanner.Models
 {
-    internal class EmployeeType
+    internal class TimeFrame
     {
         public int Id { get; set; }
-        public string Title { get; set; }
+        public DateTime TimeFrameStart { get; set; }
+        public DateTime TimeFrameEnd { get; set; }
     }
 }

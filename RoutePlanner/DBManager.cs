@@ -405,7 +405,7 @@ namespace RoutePlanner
             List<Residence> residences = new List<Residence>();
 
             // Convert the list of CitizenID to a comma-separated string
-            string citizenIds = string.Join(",", citizens.Where(c => c.CitizenID.HasValue).Select(c => c.CitizenID.Value));
+            string citizenIds = string.Join(",", citizens.Where(c => c.Id.HasValue).Select(c => c.Id.Value));
 
             try
             {
@@ -465,7 +465,7 @@ namespace RoutePlanner
                             {
                                 Citizen CitizenObject = new Citizen
                                 {
-                                    CitizenID = reader.GetInt32(0),
+                                    Id = reader.GetInt32(0),
                                     CitizenName = reader.GetString(1),
                                     ResidenceID = reader.GetInt32(2)
                                 };
