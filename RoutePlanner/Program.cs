@@ -25,8 +25,8 @@ namespace RoutePlanner
                 "3 = Insert Skills \n " +
                 "4 = import Address \n " +
                 "5 = Insert AssignmenType \n " +
-                "6 = Calculate and insert Distances \n " +
-                "7 = Insert Citizens \n " +
+                "6 = Insert Citizens \n " +
+                "7 = Calculate and insert Distances \n " +
                 "8 = Insert TimeFrames \n " +
                 "9 = Insert WorkingTimeSpan \n " +
                 "0 = Insert Skills \n " +
