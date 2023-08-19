@@ -8,7 +8,7 @@ namespace RoutePlanner.Models
 {
     internal class Residence
     {
-        public int Id { get; set; }
+        public int ID { get; set; }
         public string CitizenResidence { get; set; }
         public string Latitude { get; set; }
         public string Longitude { get; set; }
