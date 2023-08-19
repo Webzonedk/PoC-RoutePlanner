@@ -1,16 +1,12 @@
 ﻿using Microsoft.Data.SqlClient;
+using RoutePlanner.DataSources;
 using RoutePlanner.Models;
 using System.Data;
 
 namespace RoutePlanner
 {
-    internal class DBManager
+    internal class DBManager : DataService
     {
-        // Connection string for the database. Make sure to replace with your credentials.
-
-        //private readonly string _connectionString = "Server=LAPTOP-P6H4N3E7;Database=ComfortCare;User Id=sa;Password=Kode1234!;TrustServerCertificate=true"; //Kent
-
-        private readonly string _connectionString = "Server=Tinko;Database=ComfortCare;User Id=sa;Password=Kode1234!;TrustServerCertificate=true"; //Mads
 
 
         //Region for all insert methods
@@ -37,6 +33,13 @@ namespace RoutePlanner
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
                     connection.Open();
+
+                    // Clear the table before inserting new data
+                    using (SqlCommand cmd = new SqlCommand("DELETE FROM EmployeeType; DBCC CHECKIDENT ('EmployeeType', RESEED, 0);", connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
                     using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
                     {
                         // Add column mappings (assuming the database column name is also "Title")
@@ -69,7 +72,7 @@ namespace RoutePlanner
         public void InsertDayTypeData(List<DayType> dayTypes)
         {
             DataTable dt = new DataTable();
-            dt.Columns.Add("DayType", typeof(string));
+            dt.Columns.Add("WorkingDayType", typeof(string));
 
             foreach (var dayType in dayTypes)
             {
@@ -81,9 +84,16 @@ namespace RoutePlanner
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
                     connection.Open();
+
+                    // Clear the table before inserting new data
+                    using (SqlCommand cmd = new SqlCommand("DELETE FROM DayType; DBCC CHECKIDENT ('DayType', RESEED, 0);", connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
                     using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
                     {
-                        bulkCopy.ColumnMappings.Add("DayType", "DayType");
+                        bulkCopy.ColumnMappings.Add("WorkingDayType", "WorkingDayType");
                         bulkCopy.DestinationTableName = "DayType";
                         bulkCopy.WriteToServer(dt);
                     }
@@ -123,6 +133,13 @@ namespace RoutePlanner
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
                     connection.Open();
+
+                    // Clear the table before inserting new data
+                    using (SqlCommand cmd = new SqlCommand("DELETE FROM Skill; DBCC CHECKIDENT ('Skill', RESEED, 0);", connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
                     using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
                     {
                         bulkCopy.ColumnMappings.Add("Title", "Title");
@@ -169,6 +186,24 @@ namespace RoutePlanner
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
                     connection.Open();
+
+
+                    // Clear the Citizen table first to be able to insert
+                    using (SqlCommand cmd = new SqlCommand("DELETE FROM Citizen; DBCC CHECKIDENT ('Citizen', RESEED, 0);", connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                    // Clear the Distance table first to be able to insert
+                    using (SqlCommand cmd = new SqlCommand("DELETE FROM Distance; DBCC CHECKIDENT ('Distance', RESEED, 0);", connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                    // Clear the table before inserting new data
+                    using (SqlCommand cmd = new SqlCommand("DELETE FROM Residence; DBCC CHECKIDENT ('Residence', RESEED, 0);", connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
                     using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
                     {
                         bulkCopy.ColumnMappings.Add("CitizenResidence", "CitizenResidence");
@@ -201,7 +236,6 @@ namespace RoutePlanner
         public void InsertDistanceData(List<Distance> distances)
         {
             DataTable dt = new DataTable();
-            dt.Columns.Add("ID", typeof(int));
             dt.Columns.Add("ResidenceOneID", typeof(int));
             dt.Columns.Add("ResidenceTwoID", typeof(int));
             dt.Columns.Add("Duration", typeof(float));
@@ -209,7 +243,7 @@ namespace RoutePlanner
 
             foreach (var distance in distances)
             {
-                dt.Rows.Add(distance.Id, distance.AddressOneId, distance.AddressTwoId, distance.Duration, distance.DistanceInMeters);
+                dt.Rows.Add(distance.ResidenceOneID, distance.ResidenceTwoID, distance.Duration, distance.DistanceInMeters);
             }
 
             try
@@ -217,9 +251,15 @@ namespace RoutePlanner
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
                     connection.Open();
+
+                    // Clear the table before inserting new data
+                    using (SqlCommand cmd = new SqlCommand("DELETE FROM Distance; DBCC CHECKIDENT ('Distance', RESEED, 0);", connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
                     using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
                     {
-                        bulkCopy.ColumnMappings.Add("ID", "ID");
                         bulkCopy.ColumnMappings.Add("ResidenceOneID", "ResidenceOneID");
                         bulkCopy.ColumnMappings.Add("ResidenceTwoID", "ResidenceTwoID");
                         bulkCopy.ColumnMappings.Add("Duration", "Duration");
@@ -242,6 +282,64 @@ namespace RoutePlanner
             }
         }
 
+
+
+
+
+        public void InsertWorkingTimeSpan(List<WorkingTimeSpan> workingTimeSpans)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("TimeStart", typeof(DateTime));
+            dt.Columns.Add("TimeEnd", typeof(DateTime));
+
+            foreach (var workingTimeSpan in workingTimeSpans)
+            {
+                // Convert TimeSpan to DateTime for database insertion
+                DateTime timeStart = DateTime.Today.Add(workingTimeSpan.TimeStart);
+                DateTime timeEnd = DateTime.Today.Add(workingTimeSpan.TimeEnd);
+
+                // Handle the case where TimeEnd wraps to the next day
+                if (workingTimeSpan.TimeEnd < workingTimeSpan.TimeStart)
+                {
+                    timeEnd = timeEnd.AddDays(1);
+                }
+
+                dt.Rows.Add(timeStart, timeEnd);
+            }
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+
+                    // Clear the table before inserting new data
+                    using (SqlCommand cmd = new SqlCommand("DELETE FROM WorkingTimeSpan; DBCC CHECKIDENT ('WorkingTimeSpan', RESEED, 0);", connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
+                    {
+                        bulkCopy.ColumnMappings.Add("TimeStart", "TimeStart");
+                        bulkCopy.ColumnMappings.Add("TimeEnd", "TimeEnd");
+                        bulkCopy.DestinationTableName = "WorkingTimeSpan";
+                        bulkCopy.WriteToServer(dt);
+                    }
+                    connection.Close();
+                }
+
+                Console.WriteLine($"\n{workingTimeSpans.Count} row(s) inserted.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inserting data: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                }
+            }
+        }
 
         #endregion
 
@@ -268,7 +366,7 @@ namespace RoutePlanner
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
                     connection.Open();
-                    using (SqlCommand command = new SqlCommand("SELECT Id, citizenResidence, latitude, longitude FROM Residence", connection))
+                    using (SqlCommand command = new SqlCommand("SELECT ID, CitizenResidence, Latitude, Longitude FROM Residence", connection))
                     {
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
@@ -276,7 +374,7 @@ namespace RoutePlanner
                             {
                                 Residence address = new Residence
                                 {
-                                    Id = reader.GetInt32(0),
+                                    ID = reader.GetInt32(0),
                                     CitizenResidence = reader.GetString(1), // Assuming residence column is at index 1
                                     Latitude = reader.GetString(2), // Assuming latitude column is at index 2
                                     Longitude = reader.GetString(3) // Assuming longitude column is at index 3
@@ -325,7 +423,7 @@ namespace RoutePlanner
                             {
                                 Residence address = new Residence
                                 {
-                                    Id = reader.GetInt32(0),
+                                    ID = reader.GetInt32(0),
                                     CitizenResidence = reader.GetString(1),
                                     Latitude = reader.GetString(2),
                                     Longitude = reader.GetString(3)
@@ -339,7 +437,7 @@ namespace RoutePlanner
             }
             catch (Exception ex)
             {
-                Console.WriteLine("An error occurred while loading addresses: " + ex.Message);
+                Console.WriteLine("An error occurred while loading Citicens addresses: " + ex.Message);
             }
             return residences;
         }

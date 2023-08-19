@@ -2,16 +2,12 @@
 using Microsoft.Data.SqlClient;
 using RoutePlanner.Models;
 using System.Data;
+using RoutePlanner.DataSources;
 
 namespace RoutePlanner
 {
-    internal class DBManagerTwo
+    internal class DBManagerTwo : DataService
     {
-        // Connection string for the database. Make sure to replace with your credentials.
-        //private readonly string _connectionString = "Server=LAPTOP-P6H4N3E7;Database=ComfortCare;User Id=sa;Password=Kode1234!;TrustServerCertificate=true"; //Kent
-
-
-        private readonly string _connectionString = "Server=Tinko;Database=ComfortCare;User Id=sa;Password=Kode1234!;TrustServerCertificate=true";
 
         public void InsertAssignmentTypeData(List<AssignmentType> assignmentTypes)
         {

@@ -1,4 +1,5 @@
-﻿using RoutePlanner.Models;
+﻿using RoutePlanner.DataSources;
+using RoutePlanner.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,14 +9,8 @@ using System.Threading.Tasks;
 
 namespace RoutePlanner.Managers
 {
-    internal class CalculateDistancesManager
+    internal class CalculateDistancesManager : DataService
     {
-        //private const string Url = "https://api.openrouteservice.org/v2/directions/driving-car";
-        //private const string AuthorizationKey = "5b3ce3597851110001cf62481e7382465ac54de19127d303893c63ba";  
-
-        //private const string Url = "http://10.108.137.103:8080/ors/v2/directions/driving-car"; //School ip
-        private const string Url = "http://192.168.3.73:8080/ors/v2/directions/driving-car"; // Home ip
-
 
 
         /// <summary>
@@ -63,7 +58,7 @@ namespace RoutePlanner.Managers
 
                     if (response == null || !response.IsSuccessStatusCode)
                     {
-                        throw new Exception($"Failed to get route data after {maxRetries} attempts between Residence ID: {startAddress.Id} and Residence ID: {endAddress.Id}");
+                        throw new Exception($"Failed to get route data after {maxRetries} attempts between Residence ID: {startAddress.ID} and Residence ID: {endAddress.ID}");
                     }
 
                     var responseBody = await response.Content.ReadAsStringAsync();
@@ -76,13 +71,13 @@ namespace RoutePlanner.Managers
 
                     if (jsonResponse?.Routes == null || !jsonResponse.Routes.Any())
                     {
-                        throw new Exception($"Routes data is missing in the API response between Residence ID: {startAddress.Id} and Residence ID: {endAddress.Id}");
+                        throw new Exception($"Routes data is missing in the API response between Residence ID: {startAddress.ID} and Residence ID: {endAddress.ID}");
                     }
 
                     var distance = new Distance
                     {
-                        AddressOneId = startAddress.Id,
-                        AddressTwoId = endAddress.Id,
+                        ResidenceOneID = startAddress.ID,
+                        ResidenceTwoID = endAddress.ID,
                         Duration = (float)jsonResponse.Routes[0].Summary.Duration,
                         DistanceInMeters = (float)jsonResponse.Routes[0].Summary.Distance
                     };

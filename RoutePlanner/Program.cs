@@ -27,13 +27,16 @@ namespace RoutePlanner
                 "6 = Calculate and insert Distances \n " +
                 "7 = Insert Citizens \n " +
                 "8 = Insert TimeFrames \n " +
-                "9 = Insert Skills \n " +
+                "9 = Insert WorkingTimeSpan \n " +
                 "0 = Insert Skills \n " +
                 "a = Insert Assignments \n " +
                 "b = Insert Skills \n " +
                 "c = Insert Skills \n " +
                 "d = Insert Skills \n " +
                 "e = Insert Skills \n " +
+                "x = exit \n " +
+                "y = Delete all tables (not active) \n " +
+                "z = Insert all tables (not active) \n " +
                 "");
             //running a loop to keep the program running
             var run = true;
@@ -229,17 +232,6 @@ namespace RoutePlanner
                         }
                     case '6':
                         {
-                            //Read citizens from db, calculate distances, and insert Distances into db
-                            List<Citizen> citizens = dbManager.ReadCitizensFromDataBase();
-                            List<Residence> tempAddresses = dbManager.ReadAddressesFromDatabaseBasedOnCitizenID(citizens);
-
-                            CalculateDistancesManager calculateDistancesManager = new CalculateDistancesManager(); //Maybe an interface should be used to lower bindings
-                            var distances = await calculateDistancesManager.GetDistancesAsync(tempAddresses);
-                            dbManager.InsertDistanceData(distances);
-                            break;
-                        }
-                    case '7':
-                        {
                             List<string> names = new List<string>
                             {
                                 "Ole", "Kurt", "Henning", "Torben", "Carsten",
@@ -271,6 +263,17 @@ namespace RoutePlanner
 
                             dbManagerTwo.InsertCitizenData(citizens);
                             Console.WriteLine("Citizens inserted");
+                            break;
+                        }
+                    case '7':
+                        {
+                            //Read citizens from db, calculate distances, and insert Distances into db
+                            List<Citizen> citizens = dbManager.ReadCitizensFromDataBase();
+                            List<Residence> tempAddresses = dbManager.ReadAddressesFromDatabaseBasedOnCitizenID(citizens);
+
+                            CalculateDistancesManager calculateDistancesManager = new CalculateDistancesManager(); //Maybe an interface should be used to lower bindings
+                            var distances = await calculateDistancesManager.GetDistancesAsync(tempAddresses);
+                            dbManager.InsertDistanceData(distances);
                             break;
                         }
                     case '8':
@@ -325,6 +328,9 @@ namespace RoutePlanner
                         }
                     case '9':
                         {
+                            //Create WorkingTimeSpans and Insert them into db
+                            dbManager.InsertWorkingTimeSpan(GetWorkingTimeSpans());
+
                             break;
                         }
                     case '0':
@@ -384,6 +390,22 @@ namespace RoutePlanner
                             Console.WriteLine("Assignments inserted");
                             break;
                         }
+                    case 'b':
+                        {
+                            break;
+                        }
+                    case 'c':
+                        {
+                            break;
+                        }
+                    case 'd':
+                        {
+                            break;
+                        }
+                    case 'e':
+                        {
+                            break;
+                        }
                     case 'x':
                         {
                             run = false;
@@ -392,6 +414,20 @@ namespace RoutePlanner
                     default:
                         break;
                 }
+            }
+
+            /// <summary>
+            /// This method is used to get the working time spans for a day
+            /// </summary>
+            /// <returns>returns a list og WorkingTimeSpan</returns>
+            List<WorkingTimeSpan> GetWorkingTimeSpans()
+            {
+                return new List<WorkingTimeSpan>
+                {
+                new WorkingTimeSpan {TimeStart = new TimeSpan(7, 0, 0), TimeEnd = new TimeSpan(15, 0, 0) },
+                new WorkingTimeSpan {TimeStart = new TimeSpan(15, 0, 0), TimeEnd = new TimeSpan(23, 0, 0) },
+                new WorkingTimeSpan {TimeStart = new TimeSpan(23, 0, 0), TimeEnd = new TimeSpan(7, 0, 0) } //wraps to the next day
+                };
             }
         }
     }
