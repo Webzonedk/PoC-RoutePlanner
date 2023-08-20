@@ -166,7 +166,7 @@ namespace RoutePlanner
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
                     connection.Open();
-                    using (SqlCommand command = new SqlCommand("SELECT * FROM AssignmentType", connection))
+                    using (SqlCommand command = new SqlCommand("SELECT * FROM AssignmentType WHERE AssignmentType.ID > 3;", connection))
                     {
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
@@ -202,7 +202,6 @@ namespace RoutePlanner
         {
             DataTable dt = new DataTable();
             dt.Columns.Add("CitizenID", typeof(int));
-            dt.Columns.Add("TimeFrameID", typeof(int));
             dt.Columns.Add("EmployeeTypeMasterID", typeof(int));
             dt.Columns.Add("EmployeeTypeSlaveID", typeof(int));
             dt.Columns.Add("AssignmentTypeID", typeof(int));
@@ -211,7 +210,6 @@ namespace RoutePlanner
             {
                 DataRow row = dt.NewRow();
                 row["CitizenID"] = assignment.CitizenID;
-                row["TimeFrameID"] = assignment.TimeFrameID;
                 row["EmployeeTypeMasterID"] = assignment.EmployeeTypeMasterID;
                 row["EmployeeTypeSlaveID"] = assignment.EmployeeTypeSlaveID;
                 row["AssignmentTypeID"] = assignment.AssignmentTypeID;
@@ -227,7 +225,6 @@ namespace RoutePlanner
                     {
                         // Add column mappings (assuming the database column name is also "Title")
                         bulkCopy.ColumnMappings.Add("CitizenID", "CitizenID");
-                        bulkCopy.ColumnMappings.Add("TimeFrameID", "TimeFrameID");
                         bulkCopy.ColumnMappings.Add("EmployeeTypeMasterID", "EmployeeTypeMasterID");
                         bulkCopy.ColumnMappings.Add("EmployeeTypeSlaveID", "EmployeeTypeSlaveID");
                         bulkCopy.ColumnMappings.Add("AssignmentTypeID", "AssignmentTypeID");
