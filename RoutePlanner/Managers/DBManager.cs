@@ -34,12 +34,6 @@ namespace RoutePlanner.Managers
                 {
                     connection.Open();
 
-                    // Clear the table before inserting new data
-                    using (SqlCommand cmd = new SqlCommand("DELETE FROM EmployeeType; DBCC CHECKIDENT ('EmployeeType', RESEED, 0);", connection))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-
                     using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
                     {
                         // Add column mappings (assuming the database column name is also "Title")
@@ -85,12 +79,6 @@ namespace RoutePlanner.Managers
                 {
                     connection.Open();
 
-                    // Clear the table before inserting new data
-                    using (SqlCommand cmd = new SqlCommand("DELETE FROM DayType; DBCC CHECKIDENT ('DayType', RESEED, 0);", connection))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-
                     using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
                     {
                         bulkCopy.ColumnMappings.Add("WorkingDayType", "WorkingDayType");
@@ -133,12 +121,6 @@ namespace RoutePlanner.Managers
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
                     connection.Open();
-
-                    // Clear the table before inserting new data
-                    using (SqlCommand cmd = new SqlCommand("DELETE FROM Skill; DBCC CHECKIDENT ('Skill', RESEED, 0);", connection))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
 
                     using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
                     {
@@ -186,23 +168,6 @@ namespace RoutePlanner.Managers
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
                     connection.Open();
-
-
-                    // Clear the Citizen table first to be able to insert
-                    using (SqlCommand cmd = new SqlCommand("DELETE FROM Citizen; DBCC CHECKIDENT ('Citizen', RESEED, 0);", connection))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                    // Clear the Distance table first to be able to insert
-                    using (SqlCommand cmd = new SqlCommand("DELETE FROM Distance; DBCC CHECKIDENT ('Distance', RESEED, 0);", connection))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                    // Clear the table before inserting new data
-                    using (SqlCommand cmd = new SqlCommand("DELETE FROM Residence; DBCC CHECKIDENT ('Residence', RESEED, 0);", connection))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
 
                     using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
                     {
@@ -252,12 +217,6 @@ namespace RoutePlanner.Managers
                 {
                     connection.Open();
 
-                    // Clear the table before inserting new data
-                    using (SqlCommand cmd = new SqlCommand("DELETE FROM Distance; DBCC CHECKIDENT ('Distance', RESEED, 0);", connection))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-
                     using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
                     {
                         bulkCopy.ColumnMappings.Add("ResidenceOneID", "ResidenceOneID");
@@ -285,7 +244,10 @@ namespace RoutePlanner.Managers
 
 
 
-
+        /// <summary>
+        /// this method inserts data into the WorkingTimeSpan table
+        /// </summary>
+        /// <param name="workingTimeSpans"></param>
         public void InsertWorkingTimeSpan(List<WorkingTimeSpan> workingTimeSpans)
         {
             DataTable dt = new DataTable();
@@ -313,12 +275,6 @@ namespace RoutePlanner.Managers
                 {
                     connection.Open();
 
-                    // Clear the table before inserting new data
-                    using (SqlCommand cmd = new SqlCommand("DELETE FROM WorkingTimeSpan; DBCC CHECKIDENT ('WorkingTimeSpan', RESEED, 0);", connection))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-
                     using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
                     {
                         bulkCopy.ColumnMappings.Add("TimeStart", "TimeStart");
@@ -343,7 +299,10 @@ namespace RoutePlanner.Managers
 
 
 
-
+        /// <summary>
+        /// This method inserts data into the Employee table
+        /// </summary>
+        /// <param name="employees"></param>
         public void InsertEmployees(List<Employee> employees)
         {
             // 1. Opret en DataTable der matcher Employee strukturen i databasen
@@ -397,10 +356,6 @@ namespace RoutePlanner.Managers
 
 
         #endregion
-
-
-
-
 
 
 
