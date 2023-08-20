@@ -8,7 +8,7 @@ namespace RoutePlanner.Models
 {
     internal class Assignment
     {
-        public int Id { get; set; }
+        public int ID { get; set; }
         public int CitizenID { get; set; }
         public int TimeFrameID { get; set; }
         public int EmployeeTypeMasterID { get; set; }
