@@ -138,7 +138,7 @@ namespace RoutePlanner
                         }
                     case '0':
                         {
-                            Console.WriteLine("How many employees do you want to create?");
+                            Console.WriteLine("\nHow many employees do you want to create?");
                             int numberOfEmployees = int.Parse(Console.ReadLine());
                             Console.WriteLine("What percentage of the employees should be SOSU Assistents?");
                             int percentageOfFirstType = int.Parse(Console.ReadLine());
