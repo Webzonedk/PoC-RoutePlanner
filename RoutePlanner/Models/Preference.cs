@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace RoutePlanner.Models
 {
-    internal class DayType
+    internal class Preference
     {
-        public int? ID { get; set; }
-        public string? WorkingDayType { get; set; }
+        public int ID { get; set; }
+        public int WorkingTimespanID { get; set; }
+        public int DayTypeID { get; set; }
     }
 }

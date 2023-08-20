@@ -8,7 +8,7 @@ namespace RoutePlanner.Models
 {
     internal class WorkingTimeSpan
     {
-        public int Id { get; set; }
+        public int ID { get; set; }
         public TimeSpan TimeStart { get; set; }
         public TimeSpan TimeEnd { get; set; }
     }
