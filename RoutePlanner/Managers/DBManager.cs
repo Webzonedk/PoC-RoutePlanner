@@ -337,11 +337,99 @@ namespace RoutePlanner.Managers
                         bulkCopy.DestinationTableName = "Employee";
                         bulkCopy.WriteToServer(dt);
                     }
-
                     connection.Close();
                 }
-
                 Console.WriteLine($"\n{employees.Count} employee row(s) inserted.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inserting data: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                }
+            }
+        }
+
+
+
+        /// <summary>
+        /// This method inserts data into the Preference table
+        /// </summary>
+        /// <param name="preferences"></param>
+        public void InsertPreferenceData(List<Preference> preferences)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("WorkingTimespanID", typeof(int));
+            dt.Columns.Add("DayTypeID", typeof(int));
+
+            foreach (var preference in preferences)
+            {
+                dt.Rows.Add(preference.WorkingTimespanID, preference.DayTypeID);
+            }
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
+                    {
+                        // Add column mappings
+                        bulkCopy.ColumnMappings.Add("WorkingTimespanID", "WorkingTimespanID");
+                        bulkCopy.ColumnMappings.Add("DayTypeID", "DayTypeID");
+                        bulkCopy.DestinationTableName = "Preference";
+                        bulkCopy.WriteToServer(dt);
+                    }
+                    connection.Close();
+                }
+                Console.WriteLine($"\n{preferences.Count} row(s) inserted.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inserting data: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                }
+            }
+        }
+
+
+
+        /// <summary>
+        /// This method inserts data into the EmployeePreference table
+        /// </summary>
+        /// <param name="employeePreferences"></param>
+        public void InsertEmployeePreferenceData(List<EmployeePreference> employeePreferences)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("EmployeeID", typeof(int));
+            dt.Columns.Add("PreferenceID", typeof(int));
+
+            foreach (var employeePreference in employeePreferences)
+            {
+                dt.Rows.Add(employeePreference.EmployeeID, employeePreference.PreferenceID);
+            }
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
+                    {
+                        // Add column mappings
+                        bulkCopy.ColumnMappings.Add("EmployeeID", "EmployeeID");
+                        bulkCopy.ColumnMappings.Add("PreferenceID", "PreferenceID");
+                        bulkCopy.DestinationTableName = "EmployeePreference";
+                        bulkCopy.WriteToServer(dt);
+                    }
+                    connection.Close();
+                }
+                Console.WriteLine($"\n{employeePreferences.Count} row(s) inserted.");
             }
             catch (Exception ex)
             {
@@ -364,7 +452,169 @@ namespace RoutePlanner.Managers
 
 
 
+        /// <summary>
+        /// This method reads all Employees from the database
+        /// </summary>
+        /// <returns>Returns a list of Employee</returns>
+        public List<Employee> ReadAllEmployeesFromDatabase()
+        {
+            List<Employee> employees = new List<Employee>();
 
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("SELECT ID, Initials, EmployeePassword, EmployeeName, WeeklyWorkingHours, EmployeeTypeID, SkillID FROM Employee", connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Employee employee = new Employee
+                                {
+                                    ID = reader.GetInt32(0),
+                                    Initials = reader.GetString(1),
+                                    EmployeePassword = reader.GetString(2),
+                                    EmployeeName = reader.GetString(3),
+                                    WeeklyWorkingHours = reader.GetInt32(4),
+                                    EmployeeTypeID = reader.GetInt32(5),
+                                    SkillID = (int)(reader.IsDBNull(6) ? (int?)0 : reader.GetInt32(6))
+                                };
+                                employees.Add(employee);
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while loading employees: " + ex.Message);
+            }
+            return employees;
+        }
+
+
+        /// <summary>
+        /// This method reads all DayTypes from the database
+        /// </summary>
+        /// <returns>Returns a list of DayType</returns>
+        public List<Preference> ReadAllPreferencesFromDatabase()
+        {
+            List<Preference> preferences = new List<Preference>();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("SELECT ID, WorkingTimespanID, DayTypeID FROM Preference", connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Preference preference = new Preference
+                                {
+                                    ID = reader.GetInt32(0),
+                                    WorkingTimespanID = reader.GetInt32(1),
+                                    DayTypeID = reader.GetInt32(2)
+                                };
+                                preferences.Add(preference);
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while loading preferences: " + ex.Message);
+            }
+            return preferences;
+        }
+
+
+        /// <summary>
+        /// This method reads all DayTypes from the database
+        /// </summary>
+        /// <returns>Returns a list of DayType</returns>
+        public List<DayType> ReadAllDayTypesFromDatabase()
+        {
+            List<DayType> dayTypes = new List<DayType>();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("SELECT ID, WorkingDayType FROM DayType", connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                DayType dayType = new DayType
+                                {
+                                    ID = reader.GetInt32(0),
+                                    WorkingDayType = reader.GetString(1)
+                                };
+                                dayTypes.Add(dayType);
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while loading dayTypes: " + ex.Message);
+            }
+            return dayTypes;
+        }
+
+
+
+
+        /// <summary>
+        /// This method reads all data from the WorkingTimeSpan table
+        /// </summary>
+        /// <returns>returns a list of WorkingTimeSpan</returns>
+        public List<WorkingTimeSpan> ReadAllWorkingTimeSpansFromDatabase()
+        {
+            List<WorkingTimeSpan> workingTimeSpans = new List<WorkingTimeSpan>();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("SELECT ID, TimeStart, TimeEnd FROM WorkingTimeSpan", connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                WorkingTimeSpan workingTimeSpan = new WorkingTimeSpan
+                                {
+                                    ID = reader.GetInt32(0),
+                                    TimeStart = reader.GetDateTime(1).TimeOfDay, // Convert DateTime to TimeSpan
+                                    TimeEnd = reader.GetDateTime(2).TimeOfDay   // Convert DateTime to TimeSpan
+                                };
+                                workingTimeSpans.Add(workingTimeSpan);
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while loading workingTimeSpans: " + ex.Message);
+            }
+            return workingTimeSpans;
+        }
 
 
 
@@ -558,22 +808,6 @@ namespace RoutePlanner.Managers
         /// </summary>
         public void ResetDatabaseTables()
         {
-            // Ordered list of tables for deletion considering constraints
-            string[] tablesToDelete = {
-                "EmployeeStatementPeriod", "EmployeePreference", "EmployeeEmployeeRoute", "TimeRegistration",
-                "EmployeeSkill", "EmployeeRoute", "Assignment", "Employee", "Citizen", "Distance",
-                "Preference", "WorkingTimespan", "DayType", "TimeFrame", "AssignmentType", "Skill",
-                "Residence", "EmployeeType", "StatementPeriod"
-                };
-
-            // List of tables with identity columns to reset
-            string[] tablesWithIdentity = {
-                "Employee", "EmployeeType", "StatementPeriod", "TimeRegistration", "EmployeeRoute",
-                "Assignment", "Citizen", "Residence", "Distance", "TimeFrame", "AssignmentType",
-                "Skill", "Preference", "WorkingTimespan", "DayType", "EmployeeEmployeeRoute",
-                "EmployeeSkill", "EmployeePreference", "EmployeeStatementPeriod"
-                };
-
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
@@ -588,19 +822,21 @@ namespace RoutePlanner.Managers
 
                     try
                     {
-                        // Delete all records from each table in the correct order
-                        foreach (string table in tablesToDelete)
-                        {
-                            command.CommandText = $"DELETE FROM {table}";
-                            command.ExecuteNonQuery();
-                        }
+                        // Disable all constraints
+                        command.CommandText = "EXEC sp_MSforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'";
+                        command.ExecuteNonQuery();
+
+                        // Delete all records from each table
+                        command.CommandText = "EXEC sp_MSforeachtable 'DELETE FROM ?'";
+                        command.ExecuteNonQuery();
 
                         // Reset identity seed for each table
-                        foreach (string table in tablesWithIdentity)
-                        {
-                            command.CommandText = $"DBCC CHECKIDENT ('{table}', RESEED, 0)";
-                            command.ExecuteNonQuery();
-                        }
+                        command.CommandText = "EXEC sp_MSforeachtable 'DBCC CHECKIDENT(''?'', RESEED, 0)'";
+                        command.ExecuteNonQuery();
+
+                        // Enable all constraints
+                        command.CommandText = "EXEC sp_MSforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL'";
+                        command.ExecuteNonQuery();
 
                         // Commit transaction
                         transaction.Commit();
@@ -618,6 +854,8 @@ namespace RoutePlanner.Managers
                 Console.WriteLine("\nAll Tables has been reset");
             }
         }
+
+
         #endregion
 
 

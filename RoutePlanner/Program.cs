@@ -32,7 +32,7 @@ namespace RoutePlanner
                 "9 = Insert WorkingTimeSpan \n " +
                 "0 = Insert Employees \n " +
                 "a = Insert Assignments \n " +
-                "b = Insert Skills \n " +
+                "b = Insert Preferences \n " +
                 "c = Insert Skills \n " +
                 "d = Insert Skills \n " +
                 "e = Insert Skills \n " +
@@ -149,8 +149,6 @@ namespace RoutePlanner
                             Console.WriteLine("What percentage of the employees should parttime employees with 25 hours pr week?");
                             int hours25Percentage = int.Parse(Console.ReadLine());
 
-
-
                             //Read EmployeeTypes from db
                             List<EmployeeType> employeeTypes = dbManager.ReadEmployeeTypesFromDataBase();
 
@@ -172,6 +170,15 @@ namespace RoutePlanner
                         }
                     case 'b':
                         {
+                            var dayTypes = dbManager.ReadAllDayTypesFromDatabase();
+                            var workingTimeSpans = dbManager.ReadAllWorkingTimeSpansFromDatabase();
+                            List<Preference> preferences = GeneratePreferences(dayTypes, workingTimeSpans);
+                            dbManager.InsertPreferenceData(preferences);
+                            preferences.Clear();
+                            preferences = dbManager.ReadAllPreferencesFromDatabase();
+                            var employees = dbManager.ReadAllEmployeesFromDatabase();
+                            dbManager.InsertEmployeePreferenceData(GenerateEmployeePreferencesWithUserInput(dayTypes, workingTimeSpans, preferences, employees));
+                            Console.WriteLine("Preferences inserted");
                             break;
                         }
                     case 'c':
@@ -204,15 +211,17 @@ namespace RoutePlanner
                         break;
                 }
             }
+        }
 
 
-            /// <summary>
-            /// This method is used to create a list of skills needed to accomplish speciel tasks
-            /// </summary>
-            /// <returns>returns a list of type Skill</returns>
-            List<Skill> CreateSkils()
-            {
-                return new List<Skill>()
+
+        /// <summary>
+        /// This method is used to create a list of skills needed to accomplish speciel tasks
+        /// </summary>
+        /// <returns>returns a list of type Skill</returns>
+        private static List<Skill> CreateSkils()
+        {
+            return new List<Skill>()
                 {
                 new Skill { ID = 1, Title = "Medicinhåndtering", SkillDescription = "Oplæring i korrekt medicinhåndtering, herunder dosering, bivirkninger og interaktioner mellem forskellige lægemidler." },
                 new Skill { ID = 2, Title = "Sårpleje", SkillDescription = "Oplæring i pleje af komplekse sår for at sikre korrekt behandling og heling." },
@@ -235,27 +244,35 @@ namespace RoutePlanner
                 new Skill { ID = 19, Title = "Psykosocial støtte", SkillDescription = "Oplæring i at yde psykosocial støtte og rådgivning til borgere, der oplever ensomhed, angst eller depression." },
                 new Skill { ID = 20, Title = "Rehabilitering", SkillDescription = "Grundlæggende kendskab til rehabiliteringsteknikker for at støtte borgere i at genoprette deres funktionsevne efter sygdom eller skade." }
                 };
-            };
+        }
 
-            /// <summary>
-            /// This method is used to get the working time spans for a day
-            /// </summary>
-            /// <returns>returns a list of type WorkingTimeSpan</returns>
-            List<WorkingTimeSpan> GetWorkingTimeSpans()
-            {
-                return new List<WorkingTimeSpan>
+
+        /// <summary>
+        /// This method is used to create a list of WorkingTimeSpan
+        /// </summary>
+        /// <returns>Returns a list of WorkingTimeSpan</returns>
+        private static List<WorkingTimeSpan> GetWorkingTimeSpans()
+        {
+            return new List<WorkingTimeSpan>
                 {
                 new WorkingTimeSpan {TimeStart = new TimeSpan(7, 0, 0), TimeEnd = new TimeSpan(15, 0, 0) },
                 new WorkingTimeSpan {TimeStart = new TimeSpan(15, 0, 0), TimeEnd = new TimeSpan(23, 0, 0) },
                 new WorkingTimeSpan {TimeStart = new TimeSpan(23, 0, 0), TimeEnd = new TimeSpan(7, 0, 0) } //wraps to the next day
                 };
-            }
+        }
 
-            List<AssignmentType> GenerateAllAssignmentTypes(int rowsToCreateVAlue)
-            {
 
-                //List of titles, ordered in same index order of Descriptions list.
-                List<string> titles = new List<string>
+
+        /// <summary>
+        /// This method is used to generate a list of AssignmentTypes
+        /// </summary>
+        /// <param name="rowsToCreateVAlue"></param>
+        /// <returns>Returns a list of AssignmentType</returns>
+        private static List<AssignmentType> GenerateAllAssignmentTypes(int rowsToCreateVAlue)
+        {
+
+            //List of titles, ordered in same index order of Descriptions list.
+            List<string> titles = new List<string>
                 {
                     "Medicinadministration", "Natklar", "Sengelægning",
                     "Opvækning", "Spise- og Måltidshjælp", "Indkøb af Dagligvarer", "Transport til Aftaler", "Hjælp med Tøjvask",
@@ -263,14 +280,14 @@ namespace RoutePlanner
                     "Natobservation", "Aftensmad", "Middagsmad"
                 };
 
-                // List of random realistic durations in seconds.
-                List<int> durationInSeconds = new List<int>
+            // List of random realistic durations in seconds.
+            List<int> durationInSeconds = new List<int>
                 {
                     300, 600, 1200, 3600, 1800, 2700, 2100, 4500, 1500, 2100, 2400, 2700
                 };
 
-                //List of Descriptions, ordered in same index order of Titles list.
-                List<string> descriptions = new List<string>
+            //List of Descriptions, ordered in same index order of Titles list.
+            List<string> descriptions = new List<string>
                 {
                     "Giv medicin i henhold til dosering", "Gør klar til natten", "Læg i seng",
                     "Tag op af sengen", "Assistér med spisning og måltider", "Indkøb af nødvendige dagligvarer", "Kørsel til lægeaftaler og andre aftaler", "Hjælp til vask og foldning af tøj",
@@ -278,58 +295,58 @@ namespace RoutePlanner
                     "Observation af borgeren over hen over natten", "Aftensmads opvarmning og hjælp med at spise", "Eventuel opvarmning af middagsmad og hjælp med at spise hvis nødvendig, eller smørning af madder."
                 };
 
-                // A list of morningAssignments
-                List<string> morningAssignments = new List<string>();
-                // A list of forenoonAssignments
-                List<string> forenoonAssignments = new List<string>();
-                // A list of middayAssignments
-                List<string> middayAssignments = new List<string>();
-                // A list of aftermiddayAssignments
-                List<string> aftermiddayAssignments = new List<string>();
-                // A list of dinnerAssignments
-                List<string> dinnerAssignments = new List<string>();
-                // A list of eveningAssignments
-                List<string> eveningAssignments = new List<string>();
-                // A list of bedtimeAssignments
-                List<string> bedtimeAssignments = new List<string>();
-                // A list of nightAssignments
-                List<string> nightAssignments = new List<string>();
+            // A list of morningAssignments
+            List<string> morningAssignments = new List<string>();
+            // A list of forenoonAssignments
+            List<string> forenoonAssignments = new List<string>();
+            // A list of middayAssignments
+            List<string> middayAssignments = new List<string>();
+            // A list of aftermiddayAssignments
+            List<string> aftermiddayAssignments = new List<string>();
+            // A list of dinnerAssignments
+            List<string> dinnerAssignments = new List<string>();
+            // A list of eveningAssignments
+            List<string> eveningAssignments = new List<string>();
+            // A list of bedtimeAssignments
+            List<string> bedtimeAssignments = new List<string>();
+            // A list of nightAssignments
+            List<string> nightAssignments = new List<string>();
 
-                // Loop through all the titles we've created.
-                for (int i = 0; i < titles.Count; i++)
-                {
-                    // Look at the index of titles of where we are in the loop and get the text and make it lower chars.
-                    string title = titles[i].ToLower();
+            // Loop through all the titles we've created.
+            for (int i = 0; i < titles.Count; i++)
+            {
+                // Look at the index of titles of where we are in the loop and get the text and make it lower chars.
+                string title = titles[i].ToLower();
 
-                    //Sorts through all the assignments, and adds them to their respective lists, based on when on the day the assignment needs to be executed.
-                    if (title.Contains("opvækning") || title.Contains("hjælp til personlig hygiejne"))
-                        morningAssignments.Add(titles[i]);
-                    else if (title.Contains("spise- og måltidshjælp"))
-                        forenoonAssignments.Add(titles[i]);
-                    else if (title.Contains("aktivitetsfølgeskab") || title.Contains("ledsagelse til aktiviteter") || title.Contains("rengøring af bolig") || title.Contains("indkøb af dagligvarer") || title.Contains("medicinadministration") || title.Contains("hjælp med tøjvask") || title.Contains("transport til aftaler"))
-                        middayAssignments.Add(titles[i]);
-                    else if (title.Contains("medicinadministration") || title.Contains("hjælp med tøjvask") || title.Contains("transport til aftaler") || title.Contains("selskab og samvær"))
-                        aftermiddayAssignments.Add(titles[i]);
-                    else if (title.Contains("middagsmad"))
-                        dinnerAssignments.Add(titles[i]);
-                    else if (title.Contains("aftensmad"))
-                        eveningAssignments.Add(titles[i]);
-                    else if (title.Contains("natklar") || title.Contains("sengelægning"))
-                        bedtimeAssignments.Add(titles[i]);
-                    else if (title.Contains("natobservation"))
-                        nightAssignments.Add(titles[i]);
+                //Sorts through all the assignments, and adds them to their respective lists, based on when on the day the assignment needs to be executed.
+                if (title.Contains("opvækning") || title.Contains("hjælp til personlig hygiejne"))
+                    morningAssignments.Add(titles[i]);
+                else if (title.Contains("spise- og måltidshjælp"))
+                    forenoonAssignments.Add(titles[i]);
+                else if (title.Contains("aktivitetsfølgeskab") || title.Contains("ledsagelse til aktiviteter") || title.Contains("rengøring af bolig") || title.Contains("indkøb af dagligvarer") || title.Contains("medicinadministration") || title.Contains("hjælp med tøjvask") || title.Contains("transport til aftaler"))
+                    middayAssignments.Add(titles[i]);
+                else if (title.Contains("medicinadministration") || title.Contains("hjælp med tøjvask") || title.Contains("transport til aftaler") || title.Contains("selskab og samvær"))
+                    aftermiddayAssignments.Add(titles[i]);
+                else if (title.Contains("middagsmad"))
+                    dinnerAssignments.Add(titles[i]);
+                else if (title.Contains("aftensmad"))
+                    eveningAssignments.Add(titles[i]);
+                else if (title.Contains("natklar") || title.Contains("sengelægning"))
+                    bedtimeAssignments.Add(titles[i]);
+                else if (title.Contains("natobservation"))
+                    nightAssignments.Add(titles[i]);
 
-                }
+            }
 
-                //Crates a random value we can use later.
-                Random random = new Random();
-                //Create a list of assignmentTypes.
-                List<AssignmentType> assignmentTypes = new List<AssignmentType>();
+            //Crates a random value we can use later.
+            Random random = new Random();
+            //Create a list of assignmentTypes.
+            List<AssignmentType> assignmentTypes = new List<AssignmentType>();
 
-                //Amount of rows to create
-                int rowsToCreate = 14;
+            //Amount of rows to create
+            int rowsToCreate = 14;
 
-                for (int i = 9; i < 12; i++)
+            for (int i = 9; i < 12; i++)
                 assignmentTypes.Add(new AssignmentType()
                 {
                     Title = "Medarbejder spisepasuse",
@@ -338,71 +355,79 @@ namespace RoutePlanner
                     TimeFrameID = i,
                 });
 
-                //A loop based on the amount of rows we wish to create, in this case 14.
-                for (int i = 0; i < rowsToCreate; i++)
+            //A loop based on the amount of rows we wish to create, in this case 14.
+            for (int i = 0; i < rowsToCreate; i++)
+            {
+                string title = titles[i];
+
+                string description = descriptions[i];
+
+                int timeFrameID = 0;
+
+                // Look at the title, and assign a timeframe id to it based on which list it's in.
+                if (morningAssignments.Contains(title))
                 {
-                    string title = titles[i];
-
-                    string description = descriptions[i];
-
-                    int timeFrameID = 0;
-
-                    // Look at the title, and assign a timeframe id to it based on which list it's in.
-                    if (morningAssignments.Contains(title))
-                    {
-                        timeFrameID = 1;
-                    }
-                    else if (forenoonAssignments.Contains(title))
-                    {
-                        timeFrameID = 2;
-                    }
-                    else if (middayAssignments.Contains(title))
-                    {
-                        timeFrameID = 3;
-                    }
-                    else if (aftermiddayAssignments.Contains(title))
-                    {
-                        timeFrameID = 4;
-                    }
-                    else if (dinnerAssignments.Contains(title))
-                    {
-                        timeFrameID = 5;
-                    }
-                    else if (eveningAssignments.Contains(title))
-                    {
-                        timeFrameID = 6;
-                    }
-                    else if (bedtimeAssignments.Contains(title))
-                    {
-                        timeFrameID = 7;
-                    }
-                    else if (nightAssignments.Contains(title))
-                    {
-                        timeFrameID = 8;
-                    }
-
-                    //Assign the attributes gained from the above logic.
-                    assignmentTypes.Add(new AssignmentType()
-                    {
-                        Title = title,
-                        //Picks a random duration from the duration list, since it can vary from citizen to citizen.
-                        DurationInSeconds = durationInSeconds[random.Next(durationInSeconds.Count)],
-                        AssignmentTypeDescription = description,
-                        TimeFrameID = timeFrameID,
-                    });
+                    timeFrameID = 1;
                 }
-                
-                //Returns a list of assignmentTypes.
-                return assignmentTypes;
+                else if (forenoonAssignments.Contains(title))
+                {
+                    timeFrameID = 2;
+                }
+                else if (middayAssignments.Contains(title))
+                {
+                    timeFrameID = 3;
+                }
+                else if (aftermiddayAssignments.Contains(title))
+                {
+                    timeFrameID = 4;
+                }
+                else if (dinnerAssignments.Contains(title))
+                {
+                    timeFrameID = 5;
+                }
+                else if (eveningAssignments.Contains(title))
+                {
+                    timeFrameID = 6;
+                }
+                else if (bedtimeAssignments.Contains(title))
+                {
+                    timeFrameID = 7;
+                }
+                else if (nightAssignments.Contains(title))
+                {
+                    timeFrameID = 8;
+                }
+
+                //Assign the attributes gained from the above logic.
+                assignmentTypes.Add(new AssignmentType()
+                {
+                    Title = title,
+                    //Picks a random duration from the duration list, since it can vary from citizen to citizen.
+                    DurationInSeconds = durationInSeconds[random.Next(durationInSeconds.Count)],
+                    AssignmentTypeDescription = description,
+                    TimeFrameID = timeFrameID,
+                });
             }
 
-            List<Citizen> GenerateAllCitizens(int rowsToCreateValue)
-            {
-                //Connection to first database manager.
-                DBManager dbManager = new DBManager();
+            //Returns a list of assignmentTypes.
+            return assignmentTypes;
+        }
 
-                //List of names to pick from.
-                List<string> names = new List<string>
+
+
+
+        /// <summary>
+        /// This method generates a list of citizens, based on the amount of rows we wish to create.
+        /// </summary>
+        /// <param name="rowsToCreateValue"></param>
+        /// <returns>Returns a list of Citizen</returns>
+        private static List<Citizen> GenerateAllCitizens(int rowsToCreateValue)
+        {
+            //Connection to first database manager.
+            DBManager dbManager = new DBManager();
+
+            //List of names to pick from.
+            List<string> names = new List<string>
                 {
                     "Ole", "Kurt", "Henning", "Torben", "Carsten",
                     "Erik", "Jens", "Lars", "Sven", "Per",
@@ -414,36 +439,44 @@ namespace RoutePlanner
                     "Birgit", "Lene", "Sofie", "Ida", "Anna"
                 };
 
-                //Get all residences, from the database.
-                List<Residence> residences = dbManager.ReadAllAddressesFromDatabase();
+            //Get all residences, from the database.
+            List<Residence> residences = dbManager.ReadAllAddressesFromDatabase();
 
-                Random random = new Random();
-                //list of citizens.
-                var citizens = new List<Citizen>();
+            Random random = new Random();
+            //list of citizens.
+            var citizens = new List<Citizen>();
 
-                //Amount of rows to create
-                int rowsToCreate = rowsToCreateValue;
+            //Amount of rows to create
+            int rowsToCreate = rowsToCreateValue;
 
-                citizens.Add(new Citizen() { CitizenName = "Central", ResidenceID = 1 });
+            citizens.Add(new Citizen() { CitizenName = "Central", ResidenceID = 1 });
 
-                //Loop through the desired amount of rows to create.
-                for (int i = 0; i < rowsToCreate; i++)
-                {
-                    string name = names[random.Next(names.Count)];
-
-                    int residenceID = random.Next(residences.Count);
-
-                    citizens.Add(new Citizen() { CitizenName = name, ResidenceID = residenceID });
-                }
-
-                //Return a list of all the citizens generated.
-                return citizens;
-            }
-            
-            List<TimeFrame> GenerateTimeframes(int rowsToCreateValue)
+            //Loop through the desired amount of rows to create.
+            for (int i = 0; i < rowsToCreate; i++)
             {
-                //List of TimeFrameStart times. Ordered to match the timeFrameEnd list on index's
-                List<DateTime> timeFramesStart = new List<DateTime>
+                string name = names[random.Next(names.Count)];
+
+                int residenceID = random.Next(residences.Count);
+
+                citizens.Add(new Citizen() { CitizenName = name, ResidenceID = residenceID });
+            }
+
+            //Return a list of all the citizens generated.
+            return citizens;
+        }
+
+
+
+
+        /// <summary>
+        /// This method generates a list of timeframes, based on the amount of rows we wish to create.
+        /// </summary>
+        /// <param name="rowsToCreateValue"></param>
+        /// <returns>Returns a list of TimeFrame</returns>
+        private static List<TimeFrame> GenerateTimeframes(int rowsToCreateValue)
+        {
+            //List of TimeFrameStart times. Ordered to match the timeFrameEnd list on index's
+            List<DateTime> timeFramesStart = new List<DateTime>
                             {
                                 DateTime.ParseExact("06:00:00", "HH:mm:ss", null),
                                 DateTime.ParseExact("09:00:00", "HH:mm:ss", null),
@@ -458,8 +491,8 @@ namespace RoutePlanner
                                 DateTime.ParseExact("03:30:00", "HH:mm:ss", null),
                             };
 
-                //List of timeframeEnd times. Ordered to match the timeFrameStart list on index's
-                List<DateTime> timeFramesEnd = new List<DateTime>
+            //List of timeframeEnd times. Ordered to match the timeFrameStart list on index's
+            List<DateTime> timeFramesEnd = new List<DateTime>
                             {
                                 DateTime.ParseExact("09:00:00", "HH:mm:ss", null),
                                 DateTime.ParseExact("11:00:00", "HH:mm:ss", null),
@@ -474,113 +507,240 @@ namespace RoutePlanner
                                 DateTime.ParseExact("04:30:00", "HH:mm:ss", null),
                             };
 
-                Random random = new Random();
-                var timeFrames = new List<TimeFrame>();
+            Random random = new Random();
+            var timeFrames = new List<TimeFrame>();
 
-                //Amount of rows to create
-                int rowsToCreate = rowsToCreateValue;
+            //Amount of rows to create
+            int rowsToCreate = rowsToCreateValue;
 
-                //loops through rows to creatre.
-                for (int i = 0; i < rowsToCreate; i++)
+            //loops through rows to creatre.
+            for (int i = 0; i < rowsToCreate; i++)
+            {
+                //Uses same index to get the correct time start and end.
+                DateTime timeFrameStart = timeFramesStart[i];
+                DateTime timeFrameEnd = timeFramesEnd[i];
+
+                //Assigns the data, to the timeframe.
+                timeFrames.Add(new TimeFrame()
                 {
-                    //Uses same index to get the correct time start and end.
-                    DateTime timeFrameStart = timeFramesStart[i];
-                    DateTime timeFrameEnd = timeFramesEnd[i];
-
-                    //Assigns the data, to the timeframe.
-                    timeFrames.Add(new TimeFrame()
-                    {
-                        TimeFrameStart = timeFrameStart,
-                        TimeFrameEnd = timeFrameEnd,
-                    });
-                }
-
-                //Return the list of timeFrames.
-                return timeFrames;
+                    TimeFrameStart = timeFrameStart,
+                    TimeFrameEnd = timeFrameEnd,
+                });
             }
 
-            List<Assignment> GenerateAllAssignments(int rowsToCreateValue) {
-                //Connection to second database manager.
-                var dbManagerTwo = new DBManagerTwo();
+            //Return the list of timeFrames.
+            return timeFrames;
+        }
 
-                Random random = new Random();
 
-                //List of all the previous tables, so we can get the relevant data to combine.
-                List<Assignment> assignments = new List<Assignment>();
-                List<Citizen> citizens = dbManagerTwo.GetAllCitizensFromDatabase();
-                List<TimeFrame> timeFrames = dbManagerTwo.SelectAllTimeFramesFromDatabase();
-                List<EmployeeType> employeeTypes = dbManagerTwo.SelectAllEmployeeTypesFromDatabase();
-                List<AssignmentType> assignmentTypes = dbManagerTwo.SelectAllAssignmentTypeFromDatabase();
-                //Null for now, can be added if we have time.
-                List<Skill> skillList = new List<Skill>();
 
-                //Rows to create based on input parameters..
-                int rowsToCreate = rowsToCreateValue;
 
-                //List of tuples, to contain unique combinations so we can find a limit to not give an assignment multiple of the same assignments in the test data.
-                List<Tuple<int, int>> uniqueCombinations = new List<Tuple<int, int>>();
-                //Loop through every citizen, 
-                foreach (var citizen in citizens)
+        /// <summary>
+        /// This method generates all the assignments, based on the input parameter containing the amount of rows to create.
+        /// </summary>
+        /// <param name="rowsToCreateValue"></param>
+        /// <returns>Returns a list of Assignment</returns>
+        private static List<Assignment> GenerateAllAssignments(int rowsToCreateValue)
+        {
+            //Connection to second database manager.
+            var dbManagerTwo = new DBManagerTwo();
+
+            Random random = new Random();
+
+            //List of all the previous tables, so we can get the relevant data to combine.
+            List<Assignment> assignments = new List<Assignment>();
+            List<Citizen> citizens = dbManagerTwo.GetAllCitizensFromDatabase();
+            List<TimeFrame> timeFrames = dbManagerTwo.SelectAllTimeFramesFromDatabase();
+            List<EmployeeType> employeeTypes = dbManagerTwo.SelectAllEmployeeTypesFromDatabase();
+            List<AssignmentType> assignmentTypes = dbManagerTwo.SelectAllAssignmentTypeFromDatabase();
+            //Null for now, can be added if we have time.
+            List<Skill> skillList = new List<Skill>();
+
+            //Rows to create based on input parameters..
+            int rowsToCreate = rowsToCreateValue;
+
+            //List of tuples, to contain unique combinations so we can find a limit to not give an assignment multiple of the same assignments in the test data.
+            List<Tuple<int, int>> uniqueCombinations = new List<Tuple<int, int>>();
+            //Loop through every citizen, 
+            foreach (var citizen in citizens)
+            {
+                //Loop through every timeframe to find which citizen has been used, and what timeframe they have.
+                foreach (var timeFrame in timeFrames)
                 {
-                    //Loop through every timeframe to find which citizen has been used, and what timeframe they have.
-                    foreach (var timeFrame in timeFrames)
+                    uniqueCombinations.Add(new Tuple<int, int>(citizen.Id.Value, timeFrame.Id));
+                }
+            }
+
+            //Generates a random number, for each tuple, and sort them based on the numbers, in the unique combinations list.
+            uniqueCombinations = uniqueCombinations.OrderBy(x => random.Next()).ToList();
+
+            assignments.Add(new Assignment()
+            {
+                CitizenID = 0,
+                EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].ID,
+                AssignmentTypeID = 1,
+            });
+            assignments.Add(new Assignment()
+            {
+                CitizenID = 0,
+                EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].ID,
+                AssignmentTypeID = 2,
+            });
+            assignments.Add(new Assignment()
+            {
+                CitizenID = 0,
+                EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].ID,
+                AssignmentTypeID = 3,
+            });
+
+            int rowsCreated = 0;
+            //Loop through all uniqueCombinations till all the rows desired has been created.
+            for (int i = 0; i < uniqueCombinations.Count && rowsCreated < rowsToCreate; i++)
+            {
+                //Save a value from the lists.
+                var uniqueCombination = uniqueCombinations[i];
+                int citizenId = uniqueCombination.Item1;
+                int randomAssignmentTypeIndex = random.Next(assignmentTypes.Count);
+                int randomEmployeeTypeMasterIndex = random.Next(employeeTypes.Count);
+
+                //Create a new assignment, and add it to the assignments list with the selected values froma bove.
+                assignments.Add(new Assignment()
+                {
+                    CitizenID = citizenId,
+                    EmployeeTypeMasterID = employeeTypes[randomEmployeeTypeMasterIndex].ID,
+                    AssignmentTypeID = assignmentTypes[randomAssignmentTypeIndex].ID,
+                });
+
+                rowsCreated++;
+            }
+
+            //If the rows created cannot meet the desired amount, write this error prompt.
+            if (rowsCreated < rowsToCreate)
+            {
+                Console.WriteLine("Could not generate desired assignments with unique combinations.");
+            }
+
+            //Returns a list of assignments.
+            return assignments;
+        }
+
+
+
+
+        /// <summary>
+        /// This method is used to preferences, witch is used to tell the system how many employees it working in different days and times
+        /// </summary>
+        /// <returns>Returns a list of Preference</returns>
+        private static List<Preference> GeneratePreferences(List<DayType> dayTypes, List<WorkingTimeSpan> workingTimeSpans)
+        {
+            List<Preference> preferences = new List<Preference>();
+
+            foreach (var dayType in dayTypes)
+            {
+                if (dayType.ID == null)
+                {
+                    continue; // Skip the DayType if its ID is null
+                }
+
+                foreach (var workingTimeSpan in workingTimeSpans)
+                {
+                    Preference preference = new Preference
                     {
-                        uniqueCombinations.Add(new Tuple<int, int>(citizen.Id.Value, timeFrame.Id));
+
+                        WorkingTimespanID = workingTimeSpan.ID,
+                        DayTypeID = dayType.ID.Value
+                    };
+
+                    preferences.Add(preference);
+                }
+            }
+
+            return preferences;
+        }
+
+
+
+
+        /// <summary>
+        /// This method is used to generate a list of EmployeePreference objects with user input
+        /// </summary>
+        /// <param name="dayTypes"></param>
+        /// <param name="workingTimeSpans"></param>
+        /// <param name="employees"></param>
+        /// <returns>Returns a list of EmployeeReference</returns>
+        private static List<EmployeePreference> GenerateEmployeePreferencesWithUserInput(List<DayType> dayTypes, List<WorkingTimeSpan> workingTimeSpans, List<Preference> preferences, List<Employee> employees)
+        {
+            Random random = new Random();
+            Dictionary<int, double> workingTimeSpanPercentages = new Dictionary<int, double>();
+            Dictionary<int, double> dayTypePercentages = new Dictionary<int, double>();
+            List<EmployeePreference> employeePreferences = new List<EmployeePreference>();
+            int employeePreferenceID = 1; // Start ID for EmployeePreference objects
+
+            Console.WriteLine("Please enter the percentage of employees willing to work during each time span (Max 100 for each choice):");
+
+            foreach (var workingTimeSpan in workingTimeSpans)
+            {
+                Console.Write($"ID {workingTimeSpan.ID} = {workingTimeSpan.TimeStart}-{workingTimeSpan.TimeEnd}: ");
+                double percentage = double.Parse(Console.ReadLine()) / 100.0;
+                workingTimeSpanPercentages.Add(workingTimeSpan.ID, percentage);
+            }
+
+            Console.WriteLine("\nPlease enter the percentage of employees willing to work on each type of day (Max 100 for each choice):");
+
+            foreach (var dayType in dayTypes)
+            {
+                if (dayType.ID == null || dayType.WorkingDayType == null)
+                {
+                    continue;
+                }
+
+                Console.Write($"ID {dayType.ID} = {dayType.WorkingDayType}: ");
+                double percentage = double.Parse(Console.ReadLine()) / 100.0;
+                dayTypePercentages.Add(dayType.ID.Value, percentage);
+            }
+
+            // Generate EmployeePreferences
+            foreach (var employee in employees)
+            {
+                foreach (var workingTimeSpan in workingTimeSpans)
+                {
+                    if (random.NextDouble() < workingTimeSpanPercentages[workingTimeSpan.ID])
+                    {
+                        foreach (var dayType in dayTypes)
+                        {
+                            if (dayType.ID == null)
+                            {
+                                continue;
+                            }
+
+                            if (random.NextDouble() < dayTypePercentages[dayType.ID.Value])
+                            {
+                                int preferenceID = GetPreferenceID(workingTimeSpan.ID, dayType.ID.Value, preferences);
+
+                                EmployeePreference employeePreference = new EmployeePreference
+                                {
+                                    ID = employeePreferenceID++,
+                                    EmployeeID = employee.ID,
+                                    PreferenceID = preferenceID
+                                };
+
+                                employeePreferences.Add(employeePreference);
+                            }
+                        }
                     }
                 }
-
-                //Generates a random number, for each tuple, and sort them based on the numbers, in the unique combinations list.
-                uniqueCombinations = uniqueCombinations.OrderBy(x => random.Next()).ToList();
-
-                assignments.Add(new Assignment()
-                {
-                    CitizenID = 0,
-                    EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].ID,
-                    AssignmentTypeID = 1,
-                });
-                assignments.Add(new Assignment()
-                {
-                    CitizenID = 0,
-                    EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].ID,
-                    AssignmentTypeID = 2,
-                });
-                assignments.Add(new Assignment()
-                {
-                    CitizenID = 0,
-                    EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].ID,
-                    AssignmentTypeID = 3,
-                });
-
-                int rowsCreated = 0;
-                //Loop through all uniqueCombinations till all the rows desired has been created.
-                for (int i = 0; i < uniqueCombinations.Count && rowsCreated < rowsToCreate; i++)
-                {
-                    //Save a value from the lists.
-                    var uniqueCombination = uniqueCombinations[i];
-                    int citizenId = uniqueCombination.Item1;
-                    int randomAssignmentTypeIndex = random.Next(assignmentTypes.Count);
-                    int randomEmployeeTypeMasterIndex = random.Next(employeeTypes.Count);
-
-                    //Create a new assignment, and add it to the assignments list with the selected values froma bove.
-                    assignments.Add(new Assignment()
-                    {
-                        CitizenID = citizenId,
-                        EmployeeTypeMasterID = employeeTypes[randomEmployeeTypeMasterIndex].ID,
-                        AssignmentTypeID = assignmentTypes[randomAssignmentTypeIndex].ID,
-                    });
-
-                    rowsCreated++;
-                }
-
-                //If the rows created cannot meet the desired amount, write this error prompt.
-                if (rowsCreated < rowsToCreate)
-                {
-                    Console.WriteLine("Could not generate desired assignments with unique combinations.");
-                }
-
-                //Returns a list of assignments.
-                return assignments;
             }
+            return employeePreferences;
         }
+
+        // Placeholder method to get the actual PreferenceID based on WorkingTimeSpan and DayType
+        private static int GetPreferenceID(int workingTimeSpanID, int dayTypeID, List<Preference> preferences)
+        {
+            var preference = preferences.FirstOrDefault(p => p.WorkingTimespanID == workingTimeSpanID && p.DayTypeID == dayTypeID);
+            return preference?.ID ?? 0;
+        }
+
+
+
     }
 }
