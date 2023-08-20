@@ -443,12 +443,222 @@ namespace RoutePlanner.Managers
 
 
 
+
+        /// <summary>
+        /// This method inserts data into the Assignment table
+        /// </summary>
+        /// <param name="assignments"></param>
+        public void InsertAssignmentData(List<Assignment> assignments)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("CitizenID", typeof(int));
+            dt.Columns.Add("EmployeeTypeMasterID", typeof(int));
+            dt.Columns.Add("EmployeeTypeSlaveID", typeof(int));
+            dt.Columns.Add("AssignmentTypeID", typeof(int));
+
+            foreach (var assignment in assignments)
+            {
+                DataRow row = dt.NewRow();
+                row["CitizenID"] = assignment.CitizenID;
+                row["EmployeeTypeMasterID"] = assignment.EmployeeTypeMasterID;
+                row["EmployeeTypeSlaveID"] = assignment.EmployeeTypeSlaveID;
+                row["AssignmentTypeID"] = assignment.AssignmentTypeID;
+                dt.Rows.Add(row);
+            }
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
+                    {
+                        bulkCopy.ColumnMappings.Add("CitizenID", "CitizenID");
+                        bulkCopy.ColumnMappings.Add("EmployeeTypeMasterID", "EmployeeTypeMasterID");
+                        bulkCopy.ColumnMappings.Add("EmployeeTypeSlaveID", "EmployeeTypeSlaveID");
+                        bulkCopy.ColumnMappings.Add("AssignmentTypeID", "AssignmentTypeID");
+
+                        bulkCopy.DestinationTableName = "Assignment";
+                        bulkCopy.WriteToServer(dt);
+                    }
+                    connection.Close();
+                }
+
+                Console.WriteLine($"\n{assignments.Count} row(s) inserted.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inserting data: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                }
+            }
+        }
+
+
+
+        /// <summary>
+        /// This method Inserts the TimeFrames generated into the TimeFrame table, in the database.
+        /// </summary>
+        /// <param name="timeframes">The timeframes previously generated in the Program.cs file.</param>
+        public void InsertTimeFrameData(List<TimeFrame> timeframes)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("TimeFrameStart", typeof(string));
+            dt.Columns.Add("TimeFrameEnd", typeof(string));
+
+            foreach (var timeframe in timeframes)
+            {
+                DataRow row = dt.NewRow();
+                row["TimeFrameStart"] = timeframe.TimeFrameStart;
+                row["TimeFrameEnd"] = timeframe.TimeFrameEnd;
+                dt.Rows.Add(row);
+            }
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
+                    {
+                        // Add column mappings (assuming the database column name is also "Title")
+                        bulkCopy.ColumnMappings.Add("TimeFrameStart", "TimeFrameStart");
+                        bulkCopy.ColumnMappings.Add("TimeFrameEnd", "TimeFrameEnd");
+
+                        bulkCopy.DestinationTableName = "TimeFrame";
+                        bulkCopy.WriteToServer(dt);
+                    }
+                    connection.Close();
+                }
+
+                Console.WriteLine($"\n{timeframes.Count} row(s) inserted.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inserting data: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                }
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// This method inserts assignments into the database, loop through all the assignmentTypes, and assign the current assignmentType to the row. 
+        /// </summary>
+        /// <param name="assignmentTypes">The assignmentTypes generated previously, that is being passed down to the db call.</param>
+        public void InsertAssignmentTypeData(List<AssignmentType> assignmentTypes)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Title", typeof(string));
+            dt.Columns.Add("AssignmentTypeDescription", typeof(string));
+            dt.Columns.Add("DurationInSeconds", typeof(int));
+            dt.Columns.Add("TimeFrameID", typeof(int));
+
+            foreach (var thisAssignmentType in assignmentTypes)
+            {
+                DataRow row = dt.NewRow();
+                row["Title"] = thisAssignmentType.Title;
+                row["AssignmentTypeDescription"] = thisAssignmentType.AssignmentTypeDescription;
+                row["DurationInSeconds"] = thisAssignmentType.DurationInSeconds;
+                row["TimeFrameID"] = thisAssignmentType.TimeFrameID;
+                dt.Rows.Add(row);
+            }
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
+                    {
+                        // Add column mappings (assuming the database column name is also "Title")
+                        bulkCopy.ColumnMappings.Add("Title", "Title");
+                        bulkCopy.ColumnMappings.Add("AssignmentTypeDescription", "AssignmentTypeDescription");
+                        bulkCopy.ColumnMappings.Add("DurationInSeconds", "DurationInSeconds");
+                        bulkCopy.ColumnMappings.Add("TimeFrameID", "TimeFrameID");
+
+                        bulkCopy.DestinationTableName = "AssignmentType";
+                        bulkCopy.WriteToServer(dt);
+                    }
+                    connection.Close();
+                }
+
+                Console.WriteLine($"\n{assignmentTypes.Count} row(s) inserted.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inserting data: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                }
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// This method inserts the generated citizens into the citizen table in the database.
+        /// </summary>
+        /// <param name="citizens">The citizens previously generated in the Program.cs file.</param>
+        public void InsertCitizenData(List<Citizen> citizens)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("CitizenName", typeof(string));
+            dt.Columns.Add("ResidenceID", typeof(int));
+
+            foreach (var thisCitizen in citizens)
+            {
+                DataRow row = dt.NewRow();
+                row["CitizenName"] = thisCitizen.CitizenName;
+                row["ResidenceID"] = thisCitizen.ResidenceID;
+                dt.Rows.Add(row);
+            }
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
+                    {
+                        bulkCopy.ColumnMappings.Add("CitizenName", "CitizenName");
+                        bulkCopy.ColumnMappings.Add("ResidenceID", "ResidenceID");
+                        bulkCopy.DestinationTableName = "Citizen";
+                        bulkCopy.WriteToServer(dt);
+                    }
+                    connection.Close();
+                }
+
+                Console.WriteLine($"\n{citizens.Count} row(s) inserted.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inserting data: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                }
+            }
+        }
+
+
         #endregion
+
+
 
 
 
         //Region for all read methods
         #region Read    
+
 
 
 
@@ -752,7 +962,6 @@ namespace RoutePlanner.Managers
 
 
 
-
         /// <summary>
         /// This method reads all employeeTypes from the database and returns them as a list of EmployeeType objects
         /// </summary>
@@ -785,16 +994,111 @@ namespace RoutePlanner.Managers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("An error occurred while loading employee types: " + ex.Message);
+                Console.WriteLine("An error occurred while loading employeetypes: " + ex.Message);
             }
 
             return employeeTypes;
         }
 
+
+
+
+        /// <summary>
+        /// This method reads all TimeFrames from the database and returns them as a list of TimeFrame objects
+        /// </summary>
+        /// <returns>Returns List<TimeFrame> TimeFrames </returns>
+        public List<TimeFrame> ReadAllTimeFramesFromDatabase()
+        {
+            List<TimeFrame> TimeFrames = new List<TimeFrame>();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("SELECT ID, TimeFrameStart, TimeFrameEnd FROM TimeFrame", connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                TimeFrame timeFrame = new TimeFrame
+                                {
+                                    Id = reader.GetInt32(0),
+                                    TimeFrameStart = reader.GetDateTime(1),
+                                    TimeFrameEnd = reader.GetDateTime(2),
+                                };
+                                TimeFrames.Add(timeFrame);
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while loading TimeFrames: " + ex.Message);
+            }
+            return TimeFrames;
+        }
+
+
+
+
+        /// <summary>
+        /// This method reads all AssignmentTypes from the database and returns them as a list of AssignmentType objects
+        /// </summary>
+        /// <returns>Returns List<AssignmentType> assignmentTypes </returns>
+        public List<AssignmentType> ReadAllAssignmentTypeFromDatabase()
+        {
+            List<AssignmentType> assignmentTypes = new List<AssignmentType>();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("SELECT * FROM AssignmentType WHERE AssignmentType.ID > 3;", connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                AssignmentType assignmentType = new AssignmentType
+                                {
+                                    ID = reader.GetInt32(0),
+                                    Title = reader.GetString(1),
+                                    AssignmentTypeDescription = reader.GetString(2),
+                                    DurationInSeconds = reader.GetInt32(3),
+                                    TimeFrameID = reader.GetInt32(4),
+                                };
+                                assignmentTypes.Add(assignmentType);
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while loading AssignmentTypes: " + ex.Message);
+            }
+            return assignmentTypes;
+        }
+
+
+
+
         #endregion
 
 
+
+
         #region Update
+
+
+
+
 
         #endregion
 
@@ -802,6 +1106,10 @@ namespace RoutePlanner.Managers
 
 
         #region Delete
+
+
+
+
 
         /// <summary>
         /// This method deletes all data from the database and resets the identity columns
@@ -856,13 +1164,10 @@ namespace RoutePlanner.Managers
         }
 
 
+
+
         #endregion
 
-
-
     }
-
-
-
 }
 

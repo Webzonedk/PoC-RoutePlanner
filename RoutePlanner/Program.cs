@@ -46,7 +46,6 @@ namespace RoutePlanner
             {
                 char input = Console.ReadKey().KeyChar;
                 var dbManager = new DBManager();
-                var dbManagerTwo = new DBManagerTwo();
                 switch (input)
                 {
                     case '1':
@@ -93,7 +92,7 @@ namespace RoutePlanner
                     case '5':
                         {
                             List<AssignmentType> assignmentTypes = GenerateAllAssignmentTypes(14);
-                            dbManagerTwo.InsertAssignmentTypeData(assignmentTypes);
+                            dbManager.InsertAssignmentTypeData(assignmentTypes);
                             Console.WriteLine("AssignmentType inserted");
                             break;
                         }
@@ -103,7 +102,7 @@ namespace RoutePlanner
                             List<Citizen> citizens = GenerateAllCitizens(20);
 
                             //Sends the list of citizens on to the sql statement that inserts the citizens into the citizen table.
-                            dbManagerTwo.InsertCitizenData(citizens);
+                            dbManager.InsertCitizenData(citizens);
                             Console.WriteLine("Citizens inserted");
                             break;
                         }
@@ -124,7 +123,7 @@ namespace RoutePlanner
                             List<TimeFrame> timeFrames = GenerateTimeframes(11);
 
                             //Sends the list of timeframes on to the sql statement that inserts the timeFrames into the timeFrame table.
-                            dbManagerTwo.InsertTimeFrameData(timeFrames);
+                            dbManager.InsertTimeFrameData(timeFrames);
                             Console.WriteLine("Timeframes inserted");
                             break;
 
@@ -164,7 +163,7 @@ namespace RoutePlanner
                             //Calls the function to generate all assignments, and requires paramter, of int of how many rows to generate (assignments to generate)
                             List<Assignment> assignments = GenerateAllAssignments(100);
                             //Sends the list of assignments, on to the sql statement that inserts the assignments into the assignments table.
-                            dbManagerTwo.InsertAssignmentData(assignments);
+                            dbManager.InsertAssignmentData(assignments);
                             Console.WriteLine("Assignments inserted");
                             break;
                         }
@@ -543,16 +542,16 @@ namespace RoutePlanner
         private static List<Assignment> GenerateAllAssignments(int rowsToCreateValue)
         {
             //Connection to second database manager.
-            var dbManagerTwo = new DBManagerTwo();
+            var dbManager = new DBManager();
 
             Random random = new Random();
 
             //List of all the previous tables, so we can get the relevant data to combine.
             List<Assignment> assignments = new List<Assignment>();
-            List<Citizen> citizens = dbManagerTwo.GetAllCitizensFromDatabase();
-            List<TimeFrame> timeFrames = dbManagerTwo.SelectAllTimeFramesFromDatabase();
-            List<EmployeeType> employeeTypes = dbManagerTwo.SelectAllEmployeeTypesFromDatabase();
-            List<AssignmentType> assignmentTypes = dbManagerTwo.SelectAllAssignmentTypeFromDatabase();
+            List<Citizen> citizens = dbManager.ReadCitizensFromDataBase();
+            List<TimeFrame> timeFrames = dbManager.ReadAllTimeFramesFromDatabase();
+            List<EmployeeType> employeeTypes = dbManager.ReadEmployeeTypesFromDataBase();
+            List<AssignmentType> assignmentTypes = dbManager.ReadAllAssignmentTypeFromDatabase();
             //Null for now, can be added if we have time.
             List<Skill> skillList = new List<Skill>();
 
