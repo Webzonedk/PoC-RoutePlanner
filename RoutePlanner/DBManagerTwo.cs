@@ -174,7 +174,7 @@ namespace RoutePlanner
                             {
                                 AssignmentType assignmentType = new AssignmentType
                                 {
-                                    Id = reader.GetInt32(0),
+                                    ID = reader.GetInt32(0),
                                     Title = reader.GetString(1), // Assuming title column is at index 1
                                     AssignmentTypeDescription = reader.GetString(2), // Assuming AssignmentTypeDescription column is at index 2
                                     DurationInSeconds = reader.GetInt32(3), // Assuming DurationInSeconds column is at index 3
@@ -299,7 +299,7 @@ namespace RoutePlanner
                             {
                                 EmployeeType employeeType = new EmployeeType
                                 {
-                                    Id = reader.GetInt32(0),
+                                    ID = reader.GetInt32(0),
                                     Title = reader.GetString(1), // Assuming Title column is at index 1
                                 };
                                 employeeTypes.Add(employeeType);

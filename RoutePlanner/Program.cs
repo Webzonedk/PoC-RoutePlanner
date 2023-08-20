@@ -238,23 +238,6 @@ namespace RoutePlanner
             };
 
             /// <summary>
-            /// This method is used to create a list of assignment types
-            /// </summary>
-            /// <returns>returns a list of type AssignmentType</returns>
-            List<AssignmentType> CreateAssignmentType()
-            {
-                return new List<AssignmentType>()
-                {
-                new AssignmentType(){Title = "Alm. rengøring", DurationInSeconds = 300, AssignmentTypeDescription = "Regulær rengøring"},
-                new AssignmentType(){Title = "Medicinering", DurationInSeconds = 300, AssignmentTypeDescription = "Administrering af medicin"},
-                new AssignmentType(){Title = "Natklar", DurationInSeconds = 600, AssignmentTypeDescription = "Gør klar til natten"},
-                new AssignmentType(){Title = "Sengelægning", DurationInSeconds = 600, AssignmentTypeDescription = "Læg i seng"},
-                new AssignmentType(){Title = "Opvækning", DurationInSeconds = 1200, AssignmentTypeDescription = "Tag op af sengen"},
-                new AssignmentType(){Title = "Mad", DurationInSeconds = 900, AssignmentTypeDescription = "Opvarmning af mad, samt servering"},
-                };
-            }
-
-            /// <summary>
             /// This method is used to get the working time spans for a day
             /// </summary>
             /// <returns>returns a list of type WorkingTimeSpan</returns>
@@ -552,19 +535,19 @@ namespace RoutePlanner
                 assignments.Add(new Assignment()
                 {
                     CitizenID = 0,
-                    EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].Id,
+                    EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].ID,
                     AssignmentTypeID = 1,
                 });
                 assignments.Add(new Assignment()
                 {
                     CitizenID = 0,
-                    EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].Id,
+                    EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].ID,
                     AssignmentTypeID = 2,
                 });
                 assignments.Add(new Assignment()
                 {
                     CitizenID = 0,
-                    EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].Id,
+                    EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].ID,
                     AssignmentTypeID = 3,
                 });
 
@@ -582,8 +565,8 @@ namespace RoutePlanner
                     assignments.Add(new Assignment()
                     {
                         CitizenID = citizenId,
-                        EmployeeTypeMasterID = employeeTypes[randomEmployeeTypeMasterIndex].Id,
-                        AssignmentTypeID = assignmentTypes[randomAssignmentTypeIndex].Id,
+                        EmployeeTypeMasterID = employeeTypes[randomEmployeeTypeMasterIndex].ID,
+                        AssignmentTypeID = assignmentTypes[randomAssignmentTypeIndex].ID,
                     });
 
                     rowsCreated++;
