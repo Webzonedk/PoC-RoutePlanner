@@ -141,7 +141,7 @@ namespace RoutePlanner
                     case '8':
                         {
                             //Calls the function to generate all time frames, requires paramter of int, which is how many timeframes to create.
-                            List<TimeFrame> timeFrames = GenerateTimeframes(8);
+                            List<TimeFrame> timeFrames = GenerateTimeframes(11);
 
                             //Sends the list of timeframes on to the sql statement that inserts the timeFrames into the timeFrame table.
                             dbManagerTwo.InsertTimeFrameData(timeFrames);
@@ -287,6 +287,15 @@ namespace RoutePlanner
                 //Amount of rows to create
                 int rowsToCreate = 14;
 
+                for (int i = 9; i < 12; i++)
+                assignmentTypes.Add(new AssignmentType()
+                {
+                    Title = "Medarbejder spisepasuse",
+                    DurationInSeconds = 1800,
+                    AssignmentTypeDescription = "Medarbejder køre til centralen til spisepause",
+                    TimeFrameID = i,
+                });
+
                 //A loop based on the amount of rows we wish to create, in this case 14.
                 for (int i = 0; i < rowsToCreate; i++)
                 {
@@ -373,6 +382,8 @@ namespace RoutePlanner
                 //Amount of rows to create
                 int rowsToCreate = rowsToCreateValue;
 
+                citizens.Add(new Citizen() { CitizenName = "Central", ResidenceID = 1 });
+
                 //Loop through the desired amount of rows to create.
                 for (int i = 0; i < rowsToCreate; i++)
                 {
@@ -400,6 +411,9 @@ namespace RoutePlanner
                                 DateTime.ParseExact("18:30:00", "HH:mm:ss", null),
                                 DateTime.ParseExact("21:00:00", "HH:mm:ss", null),
                                 DateTime.ParseExact("23:00:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("11:30:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("19:30:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("03:30:00", "HH:mm:ss", null),
                             };
 
                 //List of timeframeEnd times. Ordered to match the timeFrameStart list on index's
@@ -413,6 +427,9 @@ namespace RoutePlanner
                                 DateTime.ParseExact("21:00:00", "HH:mm:ss", null),
                                 DateTime.ParseExact("23:00:00", "HH:mm:ss", null),
                                 DateTime.ParseExact("06:00:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("12:30:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("20:30:00", "HH:mm:ss", null),
+                                DateTime.ParseExact("04:30:00", "HH:mm:ss", null),
                             };
 
                 Random random = new Random();
@@ -473,6 +490,25 @@ namespace RoutePlanner
                 //Generates a random number, for each tuple, and sort them based on the numbers, in the unique combinations list.
                 uniqueCombinations = uniqueCombinations.OrderBy(x => random.Next()).ToList();
 
+                assignments.Add(new Assignment()
+                {
+                    CitizenID = 0,
+                    EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].Id,
+                    AssignmentTypeID = 1,
+                });
+                assignments.Add(new Assignment()
+                {
+                    CitizenID = 0,
+                    EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].Id,
+                    AssignmentTypeID = 2,
+                });
+                assignments.Add(new Assignment()
+                {
+                    CitizenID = 0,
+                    EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].Id,
+                    AssignmentTypeID = 3,
+                });
+
                 int rowsCreated = 0;
                 //Loop through all uniqueCombinations till all the rows desired has been created.
                 for (int i = 0; i < uniqueCombinations.Count && rowsCreated < rowsToCreate; i++)
@@ -487,7 +523,6 @@ namespace RoutePlanner
                     assignments.Add(new Assignment()
                     {
                         CitizenID = citizenId,
-                        TimeFrameID = assignmentTypes[randomAssignmentTypeIndex].TimeFrameID,
                         EmployeeTypeMasterID = employeeTypes[randomEmployeeTypeMasterIndex].Id,
                         AssignmentTypeID = assignmentTypes[randomAssignmentTypeIndex].Id,
                     });
