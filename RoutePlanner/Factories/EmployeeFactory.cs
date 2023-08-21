@@ -8,13 +8,16 @@ using System.Threading.Tasks;
 
 namespace RoutePlanner.Services
 {
-    internal class EmployeeCreaterService
+    /// <summary>
+    /// This class represents a factory for employees.
+    /// </summary>
+    internal class EmployeeFactory
     {
-        private readonly List<string> _firstNames; // Antages at være forudfyldt med 100 danske fornavne
-        private readonly List<string> _lastNames;  // Antages at være forudfyldt med 100 danske efternavne
+        private readonly List<string> _firstNames;
+        private readonly List<string> _lastNames;
 
 
-        public EmployeeCreaterService()
+        public EmployeeFactory()
         {
             _firstNames = new List<string>
             {
@@ -51,6 +54,17 @@ namespace RoutePlanner.Services
         }
 
 
+
+        /// <summary>
+        /// This method creates a list of employees.
+        /// </summary>
+        /// <param name="numberOfEmployees"></param>
+        /// <param name="percentageOfFirstType"></param>
+        /// <param name="hours37Percentage"></param>
+        /// <param name="hours30Percentage"></param>
+        /// <param name="hours25Percentage"></param>
+        /// <param name="employeeTypes"></param>
+        /// <returns>Returns a list of employees</returns>
         public List<Employee> CreateEmployees(int numberOfEmployees, int percentageOfFirstType, int hours37Percentage, int hours30Percentage, int hours25Percentage, List<EmployeeType> employeeTypes)
         {
             var employees = new List<Employee>();
@@ -74,13 +88,13 @@ namespace RoutePlanner.Services
                 int workingHours;
                 int rand = new Random().Next(1, 101); // Generate a number between 1 and 100
                 if (rand <= hours37Percentage)
-                    workingHours = 37;
+                    workingHours = 40;
                 else if (rand <= hours37Percentage + hours30Percentage)
-                    workingHours = 30;
+                    workingHours = 32;
                 else if (rand <= hours37Percentage + hours30Percentage + hours25Percentage)
-                    workingHours = 25;
+                    workingHours = 24;
                 else
-                    workingHours = 45;
+                    workingHours = 48;
 
                 // Generating employee type
                 int employeeTypeID;
@@ -101,6 +115,5 @@ namespace RoutePlanner.Services
             }
             return employees;
         }
-
     }
 }

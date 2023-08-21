@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace RoutePlanner.Models
 {
+    /// <summary>
+    /// This class represents a distance between two residences.
+    /// How long it takes in seconds, and how many meters there are between each residence.
+    /// </summary>
     internal class Distance
     {
         public int ID { get; set; }

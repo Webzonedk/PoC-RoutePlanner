@@ -11,13 +11,13 @@ namespace RoutePlanner.Managers
 {
     internal class CalculateDistancesManager : DataService
     {
-        private string _Url => OpenRouteServiceUrl;
+        private string _url => OpenRouteServiceUrl;
 
         /// <summary>
         /// Method to get the distances between all the addresses
         /// </summary>
         /// <param name="tempAddresses"></param>
-        /// <returns>Returns a Task<List<Distance></returns>
+        /// <returns>Returns a List of Distance </returns>
         /// <exception cref="Exception"></exception>
         public async Task<List<Distance>> GetDistancesAsync(List<Residence> tempAddresses)
         {
@@ -41,7 +41,7 @@ namespace RoutePlanner.Managers
                     {
                         try
                         {
-                            response = await httpClient.PostAsync(_Url, content);
+                            response = await httpClient.PostAsync(_url, content);
                             if (response.IsSuccessStatusCode)
                             {
                                 break; // Exit loop if request was successful

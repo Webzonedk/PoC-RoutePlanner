@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace RoutePlanner.Models
 {
+    /// <summary>
+    /// This class represents an address when being imported from the csv file.
+    /// It also returns a string representation of the address.
+    /// </summary>
     public class ImportAddress
     {
         public int Id { get; set; }

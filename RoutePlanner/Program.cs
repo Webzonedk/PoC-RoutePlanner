@@ -11,185 +11,162 @@ using RoutePlanner.Managers;
 using RoutePlanner.Services;
 using static Azure.Core.HttpHeader;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace RoutePlanner
 {
     class Program
     {
+        //Inputs to be able to adjust the amount of data to be created
+        private static int _citizensToCreate = 100;
+        private static int _maxNumberOfAssignmentRowsToCreate = 1000; //If this number will maximum be 17 * citizents, even if You put in a higher number. This is to avoid double assignments to a citizen.
+
+        private static int _numberOfEmployeesToCreate = 250;
+        private static int _percentageOfEmployeesIsSosuAssistants = 40;
+        private static int _percentOfEmployeesWorking40HoursAtWeek = 7;
+        private static int _percentOfEmployeesWorking32HoursAtWeek = 35;
+        private static int _percentOfEmployeesWorking24HoursAtWeek = 35;
+
+        private static DBManager _dbManager = new DBManager();
+        private static CalculateDistancesManager _calculateDistancesManager = new CalculateDistancesManager();
+        private static EmployeeFactory _employeeCreaterService = new EmployeeFactory();
+
         static async Task Main()
         {
-            List<ImportAddress>? addresses = new List<ImportAddress>();
-
+            Console.Clear();
             Console.WriteLine("Chose option: \n " +
                 "1 = insert employeeType \n " +
                 "2 = insert DayTypes \n " +
                 "3 = Insert Skills \n " +
                 "4 = import Address \n " +
-                "5 = Insert AssignmenType \n " +
+                "5 = Insert TimeFrames \n " +
                 "6 = Insert Citizens \n " +
-                "7 = Calculate and insert Distances \n " +
-                "8 = Insert TimeFrames \n " +
+                "7 = Calculate and insert Distances (Takes a long time depending on the amount of citizens. (ca. 25 minutes for 1000 citizens) \n " +
+                "8 = Insert AssignmenType \n " +
                 "9 = Insert WorkingTimeSpan \n " +
                 "0 = Insert Employees \n " +
                 "a = Insert Assignments \n " +
                 "b = Insert Preferences \n " +
-                "c = Insert Skills \n " +
-                "d = Insert Skills \n " +
-                "e = Insert Skills \n " +
                 "x = exit \n " +
                 "y = Delete all tables \n " +
-                "z = Insert all tables (not active) \n " +
-                "");
+                //"q = Delete all tables, except Citizen, Residence and Distance, as they take a long time to generate. \n " +
+                "z = Insert all tables \n\n ");
             //running a loop to keep the program running
             var run = true;
             while (run)
             {
                 char input = Console.ReadKey().KeyChar;
-                var dbManager = new DBManager();
                 switch (input)
                 {
                     case '1':
                         {
                             //Insert SOSO assisten and SOSU hjælper into db
-                            var employeeType = new List<EmployeeType>()
-                        {
-                            new EmployeeType(){Title = "SOSU assistent"},
-                            new EmployeeType(){Title = "SOSU hjælper"}
-                        };
-                            dbManager.InsertEmployeeTypeData(employeeType);
+                            _dbManager.InsertEmployeeTypeData(GenerateEmployeeTypes());
                             Console.WriteLine("EmployeeTypes inserted");
                             break;
                         }
                     case '2':
                         {
                             //Insert dayTypes into db
-                            var dayTypes = new List<DayType>()
-                        {
-                            new DayType(){WorkingDayType = "Hverdage"},
-                            new DayType(){WorkingDayType = "Lørdage"},
-                            new DayType(){WorkingDayType = "Søn- og helligdage"}
-                        };
-
-                            dbManager.InsertDayTypeData(dayTypes);
+                            _dbManager.InsertDayTypeData(GenerateDayTypes());
                             Console.WriteLine("DayTypes inserted");
                             break;
                         }
                     case '3':
                         {
                             //Insert skills into db
-                            dbManager.InsertSkillData(CreateSkils());
+                            _dbManager.InsertSkillData(CreateSkils());
                             Console.WriteLine("Skills inserted");
                             break;
                         }
                     case '4':
                         {
                             //Import addresses from csv and insert into db
-                            addresses = CsvReader.LoadAddressesFromCsv();
-                            dbManager.InsertAddressData(addresses);
+                            List<ImportAddress> addresses = CsvReader.LoadAddressesFromCsv();
+                            _dbManager.InsertAddressData(addresses);
                             Console.WriteLine("Addresses imported");
                             break;
                         }
                     case '5':
                         {
-                            List<AssignmentType> assignmentTypes = GenerateAllAssignmentTypes(14);
-                            dbManager.InsertAssignmentTypeData(assignmentTypes);
-                            Console.WriteLine("AssignmentType inserted");
+                            //Calls the method to generate all time frames and
+                            //Sends the list of timeframes on to the sql statement that inserts the timeFrames into the timeFrame table.
+                            _dbManager.InsertTimeFrameData(GenerateTimeframes());
+                            Console.WriteLine("Timeframes inserted");
                             break;
                         }
                     case '6':
                         {
-                            //Calls the function to generate all citizens, and takes the paramter of an int of howmany citizens you wish to genrate 
-                            List<Citizen> citizens = GenerateAllCitizens(20);
-
-                            //Sends the list of citizens on to the sql statement that inserts the citizens into the citizen table.
-                            dbManager.InsertCitizenData(citizens);
+                            Console.WriteLine("\nHow many citizens do you wish to create?");
+                            _citizensToCreate = int.Parse(Console.ReadLine());
+                            //Calls the function to generate all citizens, and takes the paramter of an int of how many citizens you wish to generate 
+                            //then it sends the list of citizens on to the sql statement that inserts the citizens into the citizen table.
+                            _dbManager.InsertCitizenData(GenerateAllCitizens(_citizensToCreate));
                             Console.WriteLine("Citizens inserted");
                             break;
                         }
                     case '7':
                         {
                             //Read citizens from db, calculate distances, and insert Distances into db
-                            List<Citizen> citizens = dbManager.ReadCitizensFromDataBase();
-                            List<Residence> tempAddresses = dbManager.ReadAddressesFromDatabaseBasedOnCitizenID(citizens);
-
-                            CalculateDistancesManager calculateDistancesManager = new CalculateDistancesManager(); //Maybe an interface should be used to lower bindings
-                            var distances = await calculateDistancesManager.GetDistancesAsync(tempAddresses);
-                            dbManager.InsertDistanceData(distances);
+                            _dbManager.InsertDistanceData(CalculateDistances());
+                            Console.WriteLine("Distances inserted");
                             break;
                         }
+
                     case '8':
                         {
-                            //Calls the function to generate all time frames, requires paramter of int, which is how many timeframes to create.
-                            List<TimeFrame> timeFrames = GenerateTimeframes(11);
-
-                            //Sends the list of timeframes on to the sql statement that inserts the timeFrames into the timeFrame table.
-                            dbManager.InsertTimeFrameData(timeFrames);
-                            Console.WriteLine("Timeframes inserted");
+                            //Creates and insert AssignmentTypes into db
+                            _dbManager.InsertAssignmentTypeData(GenerateAllAssignmentTypes());
+                            Console.WriteLine("AssignmentType inserted");
                             break;
-
                         }
                     case '9':
                         {
                             //Create WorkingTimeSpans and Insert them into db
-                            dbManager.InsertWorkingTimeSpan(GetWorkingTimeSpans());
-
+                            _dbManager.InsertWorkingTimeSpan(GetWorkingTimeSpans());
                             break;
                         }
                     case '0':
                         {
                             Console.WriteLine("\nHow many employees do you want to create?");
-                            int numberOfEmployees = int.Parse(Console.ReadLine());
+                            _numberOfEmployeesToCreate = int.Parse(Console.ReadLine());
                             Console.WriteLine("What percentage of the employees should be SOSU Assistents?");
-                            int percentageOfFirstType = int.Parse(Console.ReadLine());
-                            Console.WriteLine("What percentage of the employees should fulltime employees with 37 hours pr week?");
-                            int hours37Percentage = int.Parse(Console.ReadLine());
-                            Console.WriteLine("What percentage of the employees should parttime employees with 30 hours pr week?");
-                            int hours30Percentage = int.Parse(Console.ReadLine());
-                            Console.WriteLine("What percentage of the employees should parttime employees with 25 hours pr week?");
-                            int hours25Percentage = int.Parse(Console.ReadLine());
+                            _percentageOfEmployeesIsSosuAssistants = int.Parse(Console.ReadLine());
+                            Console.WriteLine("What percentage of the employees should fulltime employees with 40 hours pr week?");
+                            _percentOfEmployeesWorking40HoursAtWeek = int.Parse(Console.ReadLine());
+                            Console.WriteLine("What percentage of the employees should parttime employees with 32 hours pr week?");
+                            _percentOfEmployeesWorking32HoursAtWeek = int.Parse(Console.ReadLine());
+                            Console.WriteLine("What percentage of the employees should parttime employees with 24 hours pr week?");
+                            _percentOfEmployeesWorking24HoursAtWeek = int.Parse(Console.ReadLine());
 
-                            //Read EmployeeTypes from db
-                            List<EmployeeType> employeeTypes = dbManager.ReadEmployeeTypesFromDataBase();
-
+                            //Read EmployeeTypes from db and send them to the EmployeeCreaterService who
                             //Create Employees and insert them into db
-                            EmployeeCreaterService employeeCreaterService = new EmployeeCreaterService();
-
-                            dbManager.InsertEmployees(employeeCreaterService.CreateEmployees(numberOfEmployees, percentageOfFirstType, hours37Percentage, hours30Percentage, hours25Percentage, employeeTypes));
+                            _dbManager.InsertEmployees(_employeeCreaterService.CreateEmployees(
+                                _numberOfEmployeesToCreate,
+                                _percentageOfEmployeesIsSosuAssistants,
+                                _percentOfEmployeesWorking40HoursAtWeek,
+                                _percentOfEmployeesWorking32HoursAtWeek,
+                                _percentOfEmployeesWorking24HoursAtWeek,
+                                _dbManager.ReadEmployeeTypesFromDataBase())
+                                );
                             Console.WriteLine("Employees inserted");
                             break;
                         }
                     case 'a':
                         {
+                            Console.WriteLine("Max number of Assignments to create (This Might be lower if amount of citicents is low");
+                            _maxNumberOfAssignmentRowsToCreate = int.Parse(Console.ReadLine());
                             //Calls the function to generate all assignments, and requires paramter, of int of how many rows to generate (assignments to generate)
-                            List<Assignment> assignments = GenerateAllAssignments(100);
                             //Sends the list of assignments, on to the sql statement that inserts the assignments into the assignments table.
-                            dbManager.InsertAssignmentData(assignments);
-                            Console.WriteLine("Assignments inserted");
+                            _dbManager.InsertAssignmentData(GenerateAllAssignments(_maxNumberOfAssignmentRowsToCreate));
+                            Console.WriteLine("Assignments inserted to db");
                             break;
                         }
                     case 'b':
                         {
-                            var dayTypes = dbManager.ReadAllDayTypesFromDatabase();
-                            var workingTimeSpans = dbManager.ReadAllWorkingTimeSpansFromDatabase();
-                            List<Preference> preferences = GeneratePreferences(dayTypes, workingTimeSpans);
-                            dbManager.InsertPreferenceData(preferences);
-                            preferences.Clear();
-                            preferences = dbManager.ReadAllPreferencesFromDatabase();
-                            var employees = dbManager.ReadAllEmployeesFromDatabase();
-                            dbManager.InsertEmployeePreferenceData(GenerateEmployeePreferencesWithUserInput(dayTypes, workingTimeSpans, preferences, employees));
+                            //Generating preferences and connecting those to employees, and inserting them into database
+                            CreateAndInsertPreferencesIntoDB();
                             Console.WriteLine("Preferences inserted");
-                            break;
-                        }
-                    case 'c':
-                        {
-                            break;
-                        }
-                    case 'd':
-                        {
-                            break;
-                        }
-                    case 'e':
-                        {
                             break;
                         }
                     case 'x':
@@ -199,11 +176,17 @@ namespace RoutePlanner
                         }
                     case 'y':
                         {
-                            dbManager.ResetDatabaseTables();
+                            _dbManager.ResetDatabaseTables();
                             break;
                         }
+                    //case 'q':
+                    //    {
+                    //        _dbManager.DeleteAllDataExceptEssentials();
+                    //        break;
+                    //    }
                     case 'z':
                         {
+                            CreateAllTableBasedVariablesInTop();
                             break;
                         }
                     default:
@@ -211,6 +194,143 @@ namespace RoutePlanner
                 }
             }
         }
+
+
+
+
+        /// <summary>
+        /// This method first clear the Tables and afterwards fill the tables based on variables in the top of the program
+        /// </summary>
+        private static void CreateAllTableBasedVariablesInTop()
+        {
+            Console.WriteLine("\n\nResetting database");
+            _dbManager.ResetDatabaseTables();
+            Console.WriteLine("\n1: Inserting employeeType");
+            _dbManager.InsertEmployeeTypeData(GenerateEmployeeTypes());
+            Console.WriteLine("-----------");
+            Console.WriteLine("\n2: Inserting DayTypes");
+            _dbManager.InsertDayTypeData(GenerateDayTypes());
+            Console.WriteLine("-----------");
+            Console.WriteLine("\n3: Inserting Skills");
+            _dbManager.InsertSkillData(CreateSkils());
+            Console.WriteLine("-----------");
+            Console.WriteLine("\n4: Inserting Address");
+            List<ImportAddress> addresses = CsvReader.LoadAddressesFromCsv();
+            _dbManager.InsertAddressData(addresses);
+            Console.WriteLine("-----------");
+            Console.WriteLine("\n5: Inserting TimeFrames");
+            _dbManager.InsertTimeFrameData(GenerateTimeframes());
+            Console.WriteLine("-----------");
+            Console.WriteLine("\n6: Inserting Citizens");
+            _dbManager.InsertCitizenData(GenerateAllCitizens(_citizensToCreate));
+            Console.WriteLine("-----------");
+            Console.WriteLine("\n7: Calculate and insert Distances");
+            _dbManager.InsertDistanceData(CalculateDistances());
+            Console.WriteLine("-----------");
+            Console.WriteLine("\n8: Inserting AssignmenType");
+            _dbManager.InsertAssignmentTypeData(GenerateAllAssignmentTypes());
+            Console.WriteLine("-----------");
+            Console.WriteLine("\n9: Inserting WorkingTimeSpan");
+            _dbManager.InsertWorkingTimeSpan(GetWorkingTimeSpans());
+            Console.WriteLine("-----------");
+            Console.WriteLine("\n0: Inserting Employees");
+            _dbManager.InsertEmployees(_employeeCreaterService.CreateEmployees(_numberOfEmployeesToCreate, _percentageOfEmployeesIsSosuAssistants, _percentOfEmployeesWorking40HoursAtWeek, _percentOfEmployeesWorking32HoursAtWeek, _percentOfEmployeesWorking24HoursAtWeek, _dbManager.ReadEmployeeTypesFromDataBase()));
+            Console.WriteLine("-----------");
+            Console.WriteLine("\na: Inserting Assignments");
+            _dbManager.InsertAssignmentData(GenerateAllAssignments(_maxNumberOfAssignmentRowsToCreate));
+            Console.WriteLine("-----------");
+            Console.WriteLine("\nb: Inserting Preferences");
+            CreateAndInsertPreferencesIntoDB();
+            Console.WriteLine("-----------");
+            Console.WriteLine("\nAll done... Thank You for your patience!");
+        }
+
+
+
+        /// <summary>
+        /// This method generates all preferences and inserts them into the database
+        /// the method also have far to many responsibilities. but that is how I got it created.
+        /// </summary>
+        private static void CreateAndInsertPreferencesIntoDB()
+        {
+            var dayTypes = _dbManager.ReadAllDayTypesFromDatabase();
+            var workingTimeSpans = _dbManager.ReadAllWorkingTimeSpansFromDatabase();
+            _dbManager.InsertPreferenceData(GeneratePreferences(dayTypes, workingTimeSpans));
+            var preferences = _dbManager.ReadAllPreferencesFromDatabase();//Reading the inserted preferences from db to ensure that only accesible preferences are used
+            var employees = _dbManager.ReadAllEmployeesFromDatabase();
+            _dbManager.InsertEmployeePreferenceData(GenerateEmployeePreferencesWithUserInput(dayTypes, workingTimeSpans, preferences, employees));
+        }
+
+
+
+        /// <summary>
+        /// This method is calculating the distance between all addresses in the database
+        /// </summary>
+        /// <returns>Returns a list of type Distance</returns>
+        private static List<Distance> CalculateDistances()
+        {
+            try
+            {
+                Console.WriteLine("Starting Calculate Distances...This will take around 20 seconds for 100 citicens, but around 25 miutes for 1000 citicenz");
+
+                // Wait for the asynchronous method to complete and get the result
+                var distances = _calculateDistancesManager.GetDistancesAsync(
+                    _dbManager.ReadAddressesFromDatabaseBasedOnCitizenID(
+                        _dbManager.ReadCitizensFromDataBase()
+                    )
+                ).GetAwaiter().GetResult();
+
+                Console.WriteLine("CalculateDistances completed successfully.");
+                return distances;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred in CalculateDistances: {ex.Message}");
+                return new List<Distance>(); // return an empty list or null as appropriate
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// This method is used to create a list of EmployeeType
+        /// </summary>
+        /// <returns>Returns a list of type EmployeeType</returns>
+        private static List<EmployeeType> GenerateEmployeeTypes()
+        {
+            // List of employee titles
+            var employeeTitles = new List<string>
+        {
+            "SOSU assistent",
+            "SOSU hjælper"
+        };
+
+            // Using LINQ to create EmployeeType objects
+            return employeeTitles.ConvertAll(title => new EmployeeType { Title = title });
+        }
+
+
+
+
+        /// <summary>
+        /// This method is used to create a list of DayTypes
+        /// </summary>
+        /// <returns>Returns a list of type DayType</returns>
+        public static List<DayType> GenerateDayTypes()
+        {
+            // List of working day types
+            var workingDayTypes = new List<string>
+        {
+            "Hverdage",
+            "Lørdage",
+            "Søn- og helligdage"
+        };
+
+            // Using LINQ to create DayType objects
+            return workingDayTypes.ConvertAll(dayType => new DayType { WorkingDayType = dayType });
+        }
+
 
 
 
@@ -246,6 +366,8 @@ namespace RoutePlanner
         }
 
 
+
+
         /// <summary>
         /// This method is used to create a list of WorkingTimeSpan
         /// </summary>
@@ -262,12 +384,13 @@ namespace RoutePlanner
 
 
 
+
         /// <summary>
         /// This method is used to generate a list of AssignmentTypes
         /// </summary>
         /// <param name="rowsToCreateVAlue"></param>
         /// <returns>Returns a list of AssignmentType</returns>
-        private static List<AssignmentType> GenerateAllAssignmentTypes(int rowsToCreateVAlue)
+        private static List<AssignmentType> GenerateAllAssignmentTypes()
         {
 
             //List of titles, ordered in same index order of Descriptions list.
@@ -420,11 +543,8 @@ namespace RoutePlanner
         /// </summary>
         /// <param name="rowsToCreateValue"></param>
         /// <returns>Returns a list of Citizen</returns>
-        private static List<Citizen> GenerateAllCitizens(int rowsToCreateValue)
+        private static List<Citizen> GenerateAllCitizensold(int rowsToCreateValue)
         {
-            //Connection to first database manager.
-            DBManager dbManager = new DBManager();
-
             //List of names to pick from.
             List<string> names = new List<string>
                 {
@@ -439,7 +559,7 @@ namespace RoutePlanner
                 };
 
             //Get all residences, from the database.
-            List<Residence> residences = dbManager.ReadAllAddressesFromDatabase();
+            List<Residence> residences = _dbManager.ReadAllAddressesFromDatabase();
 
             Random random = new Random();
             //list of citizens.
@@ -466,69 +586,107 @@ namespace RoutePlanner
 
 
 
+        private static List<Citizen> GenerateAllCitizens(int rowsToCreateValue)
+        {
+            // Get all residences from the database.
+            List<Residence> residences = _dbManager.ReadAllAddressesFromDatabase();
+            List<string> _firstNames = new List<string>
+            {
+                "Aage", "Agnes", "Alfred", "Anders", "Anna", "Arne", "Astrid", "Axel",
+                "Bent", "Bente", "Birgit", "Birte", "Bjarne", "Bodil", "Britta", "Børge",
+                "Carla", "Carl", "Christian", "Clara", "Dagmar", "Dorthe", "Egon", "Ejner",
+                "Ella", "Ellen", "Erik", "Erna", "Ester", "Eva", "Finn", "Frede", "Frederik", "Frida",
+                "Gerda", "Grete", "Grethe", "Gunnar", "Gurli", "Hans", "Harald", "Helle", "Helge",
+                "Henning", "Henry", "Holger", "Inga", "Inge", "Inger", "Irene", "Ivan", "Jens",
+                "Jette", "Johanne", "John", "Jørgen", "Karen", "Karl", "Kirsten", "Kjeld", "Knud",
+                "Kristian", "Lars", "Laura", "Lene", "Lilly", "Lis", "Lise", "Lotte", "Mads",
+                "Margit", "Margrethe", "Maria", "Marianne", "Marie", "Mette", "Michael", "Mogens",
+                "Morten", "Niels", "Nina", "Ole", "Otto", "Palle", "Paul", "Peder", "Per",
+                "Pernille", "Peter", "Poul", "Preben", "Rasmus", "Rigmor", "Ruth", "Sigrid",
+                "Sofie", "Solveig", "Søren", "Steen", "Svend", "Thorkild", "Tove", "Ulla",
+                "Valdemar", "Vera", "Verner", "Viggo", "Villy", "Wilhelm", "Yvonne"
+            };
+
+            List<string> _lastNames = new List<string>
+            {
+                "Andersen", "Berg", "Christensen", "Davidsen", "Eriksen", "Frandsen", "Gundersen", "Hansen",
+                "Ibsen", "Jensen", "Klausen", "Larsen", "Madsen", "Nielsen", "Olsen", "Pedersen", "Petersen",
+                "Rasmussen", "Sørensen", "Thomsen", "Ulrichsen", "Vestergaard", "Winther", "Aagaard", "Bisgaard",
+                "Carlsen", "Dahl", "Eskildsen", "Frederiksen", "Graversen", "Hermansen", "Ingemann", "Jacobsen",
+                "Kjær", "Laursen", "Mortensen", "Nedergaard", "Odgaard", "Poulsen", "Quist", "Rohde", "Skov",
+                "Toft", "Uhrenholt", "Vad", "Wagner", "Aastrup", "Bruun", "Clemmensen", "Dinesen", "Ellegaard",
+                "Foged", "Gregersen", "Hedegaard", "Isaksen", "Jeppesen", "Kofoed", "Lynge", "Mogensen", "Nørregaard",
+                "Overgaard", "Præst", "Richter", "Sloth", "Torp", "Udsen", "Voss", "Westergaard", "Aaberg", "Bundgaard",
+                "Caspersen", "Dreier", "Elmquist", "Falk", "Gravesen", "Hvid", "Iversen", "Johannesen", "Kragh",
+                "Lynggaard", "Møller", "Nørup", "Odum", "Pihl", "Riis", "Steffensen", "Trier", "Ulriksen", "Vraa",
+                "Wulff", "Aakjær", "Bundvad", "Clausen", "Drost", "Elmer", "Fallesen", "Gravgaard", "Hvidtfeldt",
+                "Iwertz", "Jokumsen", "Kok", "Lyngsø", "Mogens", "Nørager", "Olesen", "Pind", "Rix", "Sonne",
+                "Thyssen", "Uldall", "Vrist", "Würtz"
+            };
+
+            Random random = new Random();
+            // List of citizens.
+            var citizens = new List<Citizen>
+            {
+                // Add the HealthCare central as a citizen.
+                new Citizen() { CitizenName = "Central", ResidenceID = 1 }
+            };
+
+            // Loop through the desired amount of rows to create.
+            for (int i = 0; i < rowsToCreateValue; i++)
+            {
+                // Generate a random first name and last name from the lists.
+                string firstName = _firstNames[random.Next(_firstNames.Count)];
+                string lastName = _lastNames[random.Next(_lastNames.Count)];
+
+                // Combine the first name and last name to create a full name.
+                string fullName = $"{firstName} {lastName}";
+
+                // Generate a random residence ID.
+                int residenceID = random.Next(residences.Count);
+
+                // Create a new Citizen object and add it to the list.
+                citizens.Add(new Citizen() { CitizenName = fullName, ResidenceID = residenceID });
+            }
+
+            // Return the list of all the citizens generated.
+            return citizens;
+        }
+
+
+
+
 
         /// <summary>
         /// This method generates a list of timeframes, based on the amount of rows we wish to create.
         /// </summary>
         /// <param name="rowsToCreateValue"></param>
         /// <returns>Returns a list of TimeFrame</returns>
-        private static List<TimeFrame> GenerateTimeframes(int rowsToCreateValue)
+        private static List<TimeFrame> GenerateTimeframes()
         {
-            //List of TimeFrameStart times. Ordered to match the timeFrameEnd list on index's
-            List<DateTime> timeFramesStart = new List<DateTime>
-                            {
-                                DateTime.ParseExact("06:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("09:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("11:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("13:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("17:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("18:30:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("21:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("23:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("11:30:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("19:30:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("03:30:00", "HH:mm:ss", null),
-                            };
+            // Liste af tuples indeholdende start- og sluttider
+            var timeFramesData = new List<(string Start, string End)>
+        {
+            ("06:00:00", "09:00:00"),
+            ("09:00:00", "11:00:00"),
+            ("11:00:00", "13:00:00"),
+            ("13:00:00", "17:00:00"),
+            ("17:00:00", "18:30:00"),
+            ("18:30:00", "21:00:00"),
+            ("21:00:00", "23:00:00"),
+            ("23:00:00", "06:00:00"),
+            ("11:30:00", "12:30:00"),
+            ("19:30:00", "20:30:00"),
+            ("03:30:00", "04:30:00"),
+        };
 
-            //List of timeframeEnd times. Ordered to match the timeFrameStart list on index's
-            List<DateTime> timeFramesEnd = new List<DateTime>
-                            {
-                                DateTime.ParseExact("09:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("11:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("13:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("17:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("18:30:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("21:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("23:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("06:00:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("12:30:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("20:30:00", "HH:mm:ss", null),
-                                DateTime.ParseExact("04:30:00", "HH:mm:ss", null),
-                            };
-
-            Random random = new Random();
-            var timeFrames = new List<TimeFrame>();
-
-            //Amount of rows to create
-            int rowsToCreate = rowsToCreateValue;
-
-            //loops through rows to creatre.
-            for (int i = 0; i < rowsToCreate; i++)
+            // Using LINQ to create TimeFrame objects from the tuples and returning the list of timeFrames
+            return timeFramesData.Select((tf, index) => new TimeFrame
             {
-                //Uses same index to get the correct time start and end.
-                DateTime timeFrameStart = timeFramesStart[i];
-                DateTime timeFrameEnd = timeFramesEnd[i];
-
-                //Assigns the data, to the timeframe.
-                timeFrames.Add(new TimeFrame()
-                {
-                    TimeFrameStart = timeFrameStart,
-                    TimeFrameEnd = timeFrameEnd,
-                });
-            }
-
-            //Return the list of timeFrames.
-            return timeFrames;
+                Id = index + 1,
+                TimeFrameStart = DateTime.ParseExact(tf.Start, "HH:mm:ss", null),
+                TimeFrameEnd = DateTime.ParseExact(tf.End, "HH:mm:ss", null)
+            }).ToList();
         }
 
 
@@ -537,9 +695,9 @@ namespace RoutePlanner
         /// <summary>
         /// This method generates all the assignments, based on the input parameter containing the amount of rows to create.
         /// </summary>
-        /// <param name="rowsToCreateValue"></param>
+        /// <param name="maxNumberOfRowsToCreate"></param>
         /// <returns>Returns a list of Assignment</returns>
-        private static List<Assignment> GenerateAllAssignments(int rowsToCreateValue)
+        private static List<Assignment> GenerateAllAssignments(int maxNumberOfRowsToCreate)
         {
             //Connection to second database manager.
             var dbManager = new DBManager();
@@ -556,7 +714,7 @@ namespace RoutePlanner
             List<Skill> skillList = new List<Skill>();
 
             //Rows to create based on input parameters..
-            int rowsToCreate = rowsToCreateValue;
+            int rowsToCreate = maxNumberOfRowsToCreate;
 
             //List of tuples, to contain unique combinations so we can find a limit to not give an assignment multiple of the same assignments in the test data.
             List<Tuple<int, int>> uniqueCombinations = new List<Tuple<int, int>>();
@@ -731,6 +889,7 @@ namespace RoutePlanner
             }
             return employeePreferences;
         }
+
 
         // Placeholder method to get the actual PreferenceID based on WorkingTimeSpan and DayType
         private static int GetPreferenceID(int workingTimeSpanID, int dayTypeID, List<Preference> preferences)

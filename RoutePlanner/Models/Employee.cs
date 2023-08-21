@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace RoutePlanner.Models
 {
+    /// <summary>
+    /// This class represents an employee.
+    /// </summary>
     internal class Employee
     {
         public int ID { get; set; }

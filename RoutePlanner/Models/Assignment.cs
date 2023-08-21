@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RoutePlanner.Models
 {
+    /// <summary>
+    /// This class represents an assignment visitated to a citizen
+    /// </summary>
     internal class Assignment
     {
         public int ID { get; set; }

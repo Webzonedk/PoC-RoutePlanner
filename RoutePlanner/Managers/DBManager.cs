@@ -523,7 +523,6 @@ namespace RoutePlanner.Managers
                     connection.Open();
                     using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
                     {
-                        // Add column mappings (assuming the database column name is also "Title")
                         bulkCopy.ColumnMappings.Add("TimeFrameStart", "TimeFrameStart");
                         bulkCopy.ColumnMappings.Add("TimeFrameEnd", "TimeFrameEnd");
 
@@ -577,7 +576,6 @@ namespace RoutePlanner.Managers
                     connection.Open();
                     using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
                     {
-                        // Add column mappings (assuming the database column name is also "Title")
                         bulkCopy.ColumnMappings.Add("Title", "Title");
                         bulkCopy.ColumnMappings.Add("AssignmentTypeDescription", "AssignmentTypeDescription");
                         bulkCopy.ColumnMappings.Add("DurationInSeconds", "DurationInSeconds");
@@ -851,9 +849,9 @@ namespace RoutePlanner.Managers
                                 Residence address = new Residence
                                 {
                                     ID = reader.GetInt32(0),
-                                    CitizenResidence = reader.GetString(1), // Assuming residence column is at index 1
-                                    Latitude = reader.GetString(2), // Assuming latitude column is at index 2
-                                    Longitude = reader.GetString(3) // Assuming longitude column is at index 3
+                                    CitizenResidence = reader.GetString(1),
+                                    Latitude = reader.GetString(2),
+                                    Longitude = reader.GetString(3)
                                 };
                                 residences.Add(address);
                             }
@@ -1112,7 +1110,7 @@ namespace RoutePlanner.Managers
 
 
         /// <summary>
-        /// This method deletes all data from the database and resets the identity columns
+        /// This method deletes all data from the database tables, and resets the identity columns
         /// </summary>
         public void ResetDatabaseTables()
         {
@@ -1164,6 +1162,78 @@ namespace RoutePlanner.Managers
         }
 
 
+
+        /// <summary>
+        /// This method deletes all data from the database tables, except Citizen, Residence and Distance, as they take a long time to generate.
+        /// </summary>
+        public void DeleteAllDataExceptEssentials()
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+
+                    // Start a new transaction
+                    using (SqlTransaction transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            // Delete data from tables, considering foreign key constraints
+                            // Tables not related to Citizen, Residence, and Distance are emptied
+
+                            // Tables with Foreign Keys
+                            ExecuteQuery(connection, transaction, "DELETE FROM EmployeeStatementPeriod");
+                            ExecuteQuery(connection, transaction, "DELETE FROM EmployeePreference");
+                            ExecuteQuery(connection, transaction, "DELETE FROM EmployeeEmployeeRoute");
+                            ExecuteQuery(connection, transaction, "DELETE FROM EmployeeSkill");
+                            ExecuteQuery(connection, transaction, "DELETE FROM EmployeeRoute");
+                            ExecuteQuery(connection, transaction, "DELETE FROM Assignment");
+                            ExecuteQuery(connection, transaction, "DELETE FROM TimeRegistration");
+                            ExecuteQuery(connection, transaction, "DELETE FROM StatementPeriod");
+                            ExecuteQuery(connection, transaction, "DELETE FROM Preference");
+                            ExecuteQuery(connection, transaction, "DELETE FROM WorkingTimespan");
+                            ExecuteQuery(connection, transaction, "DELETE FROM DayType");
+                            ExecuteQuery(connection, transaction, "DELETE FROM Skill");
+                            ExecuteQuery(connection, transaction, "DELETE FROM AssignmentType");
+                            ExecuteQuery(connection, transaction, "DELETE FROM TimeFrame");
+                            ExecuteQuery(connection, transaction, "DELETE FROM Employee");
+                            ExecuteQuery(connection, transaction, "DELETE FROM EmployeeType");
+
+                            // Commit the transaction
+                            transaction.Commit();
+                        }
+                        catch (Exception ex)
+                        {
+                            // Rollback the transaction in case of errors
+                            transaction.Rollback();
+                            Console.WriteLine($"An error occurred: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// This methos does the actually query to the database
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="transaction"></param>
+        /// <param name="query"></param>
+        private void ExecuteQuery(SqlConnection connection, SqlTransaction transaction, string query)
+        {
+            using (SqlCommand command = new SqlCommand(query, connection, transaction))
+            {
+                command.ExecuteNonQuery();
+            }
+        }
 
 
         #endregion

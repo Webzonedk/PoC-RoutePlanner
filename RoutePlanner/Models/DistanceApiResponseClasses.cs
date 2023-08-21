@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RoutePlanner.Models
 {
+    /// <summary>
+    /// This class is used for the deserialization of the response from the distance matrix API.
+    /// </summary>
     internal class DistanceApiResponseClasses
     {
         public class ApiResponse

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RoutePlanner.Models
 {
+    /// <summary>
+    /// This class represents a working time span.
+    /// </summary>
     internal class WorkingTimeSpan
     {
         public int ID { get; set; }

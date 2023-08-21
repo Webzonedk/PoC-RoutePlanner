@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RoutePlanner.Models
 {
+    /// <summary>
+    /// This class represents a skill.
+    /// </summary>
     internal class Skill
     {
         public int ID { get; set; }

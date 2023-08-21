@@ -11,7 +11,11 @@ namespace RoutePlanner.Managers
 {
     internal class CsvReader
     {
-        //public List<Address> LoadAddressesFromCsv(string filepath)
+        /// <summary>
+        /// This method loads addresses from a CSV file.
+        /// </summary>
+        /// <returns>Returns a list of ImportAddress </returns>
+        /// <exception cref="Exception"></exception>
         public static List<ImportAddress> LoadAddressesFromCsv()
         {
             var filepath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "adresser_Ringsted.csv");

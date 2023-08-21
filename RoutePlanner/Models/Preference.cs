@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RoutePlanner.Models
 {
+    /// <summary>
+    /// This class represents a preference.
+    /// </summary>
     internal class Preference
     {
         public int ID { get; set; }

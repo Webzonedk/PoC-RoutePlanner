@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RoutePlanner.Models
 {
+    /// <summary>
+    /// This class represents a time frame.
+    /// </summary>
     internal class TimeFrame
     {
         public int Id { get; set; }

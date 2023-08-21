@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RoutePlanner.Models
 {
+    /// <summary>
+    /// This class is used to store the assignment type data.
+    /// </summary>
     internal class AssignmentType
     {
         public int ID { get; set; }
