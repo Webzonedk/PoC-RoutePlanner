@@ -19,9 +19,9 @@ namespace RoutePlanner
     {
         //Inputs to be able to adjust the amount of data to be created
         private static int _citizensToCreate = 1000;
-        private static int _maxNumberOfAssignmentRowsToCreate = 20000; //If this number will maximum be 17 * citizens, even if You put in a higher number. This is to avoid double assignments to a citizen.
+        private static int _maxNumberOfAssignmentRowsToCreate = 5000; //If this number will maximum be 17 * citizens, even if You put in a higher number. This is to avoid double assignments to a citizen.
 
-        private static int _numberOfEmployeesToCreate = 300;
+        private static int _numberOfEmployeesToCreate = 500;
         private static int _percentageOfEmployeesIsSosuAssistants = 35;
         private static int _percentOfEmployeesWorking40HoursAtWeek = 7;
         private static int _percentOfEmployeesWorking30HoursAtWeek = 35;
