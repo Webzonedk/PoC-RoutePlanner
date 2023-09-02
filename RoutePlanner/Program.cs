@@ -18,14 +18,14 @@ namespace RoutePlanner
     class Program
     {
         //Inputs to be able to adjust the amount of data to be created
-        private static int _citizensToCreate = 100;
-        private static int _maxNumberOfAssignmentRowsToCreate = 1000; //If this number will maximum be 17 * citizents, even if You put in a higher number. This is to avoid double assignments to a citizen.
+        private static int _citizensToCreate = 1000;
+        private static int _maxNumberOfAssignmentRowsToCreate = 20000; //If this number will maximum be 17 * citizens, even if You put in a higher number. This is to avoid double assignments to a citizen.
 
-        private static int _numberOfEmployeesToCreate = 250;
-        private static int _percentageOfEmployeesIsSosuAssistants = 40;
+        private static int _numberOfEmployeesToCreate = 300;
+        private static int _percentageOfEmployeesIsSosuAssistants = 35;
         private static int _percentOfEmployeesWorking40HoursAtWeek = 7;
-        private static int _percentOfEmployeesWorking32HoursAtWeek = 35;
-        private static int _percentOfEmployeesWorking24HoursAtWeek = 35;
+        private static int _percentOfEmployeesWorking30HoursAtWeek = 35;
+        private static int _percentOfEmployeesWorking25HoursAtWeek = 35;
 
         private static DBManager _dbManager = new DBManager();
         private static CalculateDistancesManager _calculateDistancesManager = new CalculateDistancesManager();
@@ -134,10 +134,10 @@ namespace RoutePlanner
                             _percentageOfEmployeesIsSosuAssistants = int.Parse(Console.ReadLine());
                             Console.WriteLine("What percentage of the employees should fulltime employees with 40 hours pr week?");
                             _percentOfEmployeesWorking40HoursAtWeek = int.Parse(Console.ReadLine());
-                            Console.WriteLine("What percentage of the employees should parttime employees with 32 hours pr week?");
-                            _percentOfEmployeesWorking32HoursAtWeek = int.Parse(Console.ReadLine());
-                            Console.WriteLine("What percentage of the employees should parttime employees with 24 hours pr week?");
-                            _percentOfEmployeesWorking24HoursAtWeek = int.Parse(Console.ReadLine());
+                            Console.WriteLine("What percentage of the employees should parttime employees with 30 hours pr week?");
+                            _percentOfEmployeesWorking30HoursAtWeek = int.Parse(Console.ReadLine());
+                            Console.WriteLine("What percentage of the employees should parttime employees with 25 hours pr week?");
+                            _percentOfEmployeesWorking25HoursAtWeek = int.Parse(Console.ReadLine());
 
                             //Read EmployeeTypes from db and send them to the EmployeeCreaterService who
                             //Create Employees and insert them into db
@@ -145,8 +145,8 @@ namespace RoutePlanner
                                 _numberOfEmployeesToCreate,
                                 _percentageOfEmployeesIsSosuAssistants,
                                 _percentOfEmployeesWorking40HoursAtWeek,
-                                _percentOfEmployeesWorking32HoursAtWeek,
-                                _percentOfEmployeesWorking24HoursAtWeek,
+                                _percentOfEmployeesWorking30HoursAtWeek,
+                                _percentOfEmployeesWorking25HoursAtWeek,
                                 _dbManager.ReadEmployeeTypesFromDataBase())
                                 );
                             Console.WriteLine("Employees inserted");
@@ -234,7 +234,7 @@ namespace RoutePlanner
             _dbManager.InsertWorkingTimeSpan(GetWorkingTimeSpans());
             Console.WriteLine("-----------");
             Console.WriteLine("\n0: Inserting Employees");
-            _dbManager.InsertEmployees(_employeeCreaterService.CreateEmployees(_numberOfEmployeesToCreate, _percentageOfEmployeesIsSosuAssistants, _percentOfEmployeesWorking40HoursAtWeek, _percentOfEmployeesWorking32HoursAtWeek, _percentOfEmployeesWorking24HoursAtWeek, _dbManager.ReadEmployeeTypesFromDataBase()));
+            _dbManager.InsertEmployees(_employeeCreaterService.CreateEmployees(_numberOfEmployeesToCreate, _percentageOfEmployeesIsSosuAssistants, _percentOfEmployeesWorking40HoursAtWeek, _percentOfEmployeesWorking30HoursAtWeek, _percentOfEmployeesWorking25HoursAtWeek, _dbManager.ReadEmployeeTypesFromDataBase()));
             Console.WriteLine("-----------");
             Console.WriteLine("\na: Inserting Assignments");
             _dbManager.InsertAssignmentData(GenerateAllAssignments(_maxNumberOfAssignmentRowsToCreate));
@@ -271,7 +271,7 @@ namespace RoutePlanner
         {
             try
             {
-                Console.WriteLine("Starting Calculate Distances...This will take around 20 seconds for 100 citicens, but around 25 miutes for 1000 citicenz");
+                Console.WriteLine("Starting Calculate Distances...This will take around 20 seconds for 100 citicens, but around 25 minutes for 1000 citicenz");
 
                 // Wait for the asynchronous method to complete and get the result
                 var distances = _calculateDistancesManager.GetDistancesAsync(
@@ -468,14 +468,26 @@ namespace RoutePlanner
             //Amount of rows to create
             int rowsToCreate = 14;
 
-            for (int i = 9; i < 12; i++)
-                assignmentTypes.Add(new AssignmentType()
-                {
-                    Title = "Medarbejder spisepasuse",
-                    DurationInSeconds = 1800,
-                    AssignmentTypeDescription = "Medarbejder køre til centralen til spisepause",
-                    TimeFrameID = i,
-                });
+            //TODO: Add lunchbreak
+            //for (int i = 9; i < 12; i++)
+            //    assignmentTypes.Add(new AssignmentType()
+            //    {
+            //        Title = "Medarbejder spisepasuse",
+            //        DurationInSeconds = 1800,
+            //        AssignmentTypeDescription = "Medarbejder køre til centralen til spisepause",
+            //        TimeFrameID = i,
+            //    });
+
+
+            //TODO: Add rute starting time
+            //for (int i = 12; i < 15; i++)
+            //    assignmentTypes.Add(new AssignmentType()
+            //    {
+            //        Title = "Rute opstarte på Centralen",
+            //        DurationInSeconds = 600,
+            //        AssignmentTypeDescription = "Medarbejder møder ind, og gør klar til at køre ud på ruten",
+            //        TimeFrameID = i,
+            //    });
 
             //A loop based on the amount of rows we wish to create, in this case 14.
             for (int i = 0; i < rowsToCreate; i++)
@@ -675,9 +687,14 @@ namespace RoutePlanner
             ("18:30:00", "21:00:00"),
             ("21:00:00", "23:00:00"),
             ("23:00:00", "06:00:00"),
-            ("11:30:00", "12:30:00"),
-            ("19:30:00", "20:30:00"),
-            ("03:30:00", "04:30:00"),
+            //TODO: Add extra timeframes for luncbreaks
+            //("11:30:00", "12:30:00"),
+            //("19:30:00", "20:30:00"),
+            //("03:30:00", "04:30:00"),
+            //TODO: Add extra timeframes for beginning of shift
+            //("07:00:00", "07:01:00"),
+            //("15:00:00", "15:01:00"),
+            //("23:00:00", "23:01:00"),
         };
 
             // Using LINQ to create TimeFrame objects from the tuples and returning the list of timeFrames
@@ -731,24 +748,31 @@ namespace RoutePlanner
             //Generates a random number, for each tuple, and sort them based on the numbers, in the unique combinations list.
             uniqueCombinations = uniqueCombinations.OrderBy(x => random.Next()).ToList();
 
-            assignments.Add(new Assignment()
-            {
-                CitizenID = 0,
-                EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].ID,
-                AssignmentTypeID = 1,
-            });
-            assignments.Add(new Assignment()
-            {
-                CitizenID = 0,
-                EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].ID,
-                AssignmentTypeID = 2,
-            });
-            assignments.Add(new Assignment()
-            {
-                CitizenID = 0,
-                EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].ID,
-                AssignmentTypeID = 3,
-            });
+            //TODO: Add lunchBreaak to assignments
+            //assignments.Add(new Assignment()
+            //{
+            //    CitizenID = 0,
+            //    EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].ID,
+            //    AssignmentTypeID = 1,
+            //});
+            //assignments.Add(new Assignment()
+            //{
+            //    CitizenID = 0,
+            //    EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].ID,
+            //    AssignmentTypeID = 2,
+            //});
+            //assignments.Add(new Assignment()
+            //{
+            //    CitizenID = 0,
+            //    EmployeeTypeMasterID = employeeTypes[random.Next(employeeTypes.Count)].ID,
+            //    AssignmentTypeID = 3,
+            //});
+
+            //TODO beginning of route to assignments
+            //for (int i = 0; i < 6; i++)
+            //{
+
+            //}
 
             int rowsCreated = 0;
             //Loop through all uniqueCombinations till all the rows desired has been created.

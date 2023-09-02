@@ -90,9 +90,9 @@ namespace RoutePlanner.Services
                 if (rand <= hours37Percentage)
                     workingHours = 40;
                 else if (rand <= hours37Percentage + hours30Percentage)
-                    workingHours = 32;
+                    workingHours = 30;
                 else if (rand <= hours37Percentage + hours30Percentage + hours25Percentage)
-                    workingHours = 24;
+                    workingHours = 25;
                 else
                     workingHours = 48;
 
